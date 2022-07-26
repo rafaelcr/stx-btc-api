@@ -72,13 +72,15 @@ export async function fetchJson<TOkResponse = unknown, TErrorResponse = unknown>
   try {
     respBody = JSON.parse(respText);
   } catch (error) {
-    const errorMsg = `${req.method} ${req.url} - error parsing JSON response ${resp.status}: ${respText}`;
-    throwFetchError(error as Error, errorMsg);
+    if (resp.ok) {
+      const errorMsg = `${req.method} ${req.url} - error parsing JSON response ${resp.status}: ${respText}`;
+      throwFetchError(error as Error, errorMsg);
+    }
   }
 
   if (resp.ok) {
     return { result: 'ok', status: resp.status, response: respBody as TOkResponse, getCurlCmd };
   } else {
-    return { result: 'error', status: resp.status, response: respBody as TErrorResponse, getCurlCmd };
+    return { result: 'error', status: resp.status, response: (respBody ?? respText) as TErrorResponse, getCurlCmd };
   }
 }
