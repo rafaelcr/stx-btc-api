@@ -61,12 +61,5 @@ export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, Type
     }
     */
   });
-
-  fastify.listen({ host: '127.0.0.1', port: 3000 }, (err, address) => {
-    if (err) {
-      fastify.log.error(err)
-      // process.exit(1)
-    }
-  });
   done();
 }
