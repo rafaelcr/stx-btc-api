@@ -122,6 +122,8 @@ export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, Type
       decodedResult = null;
     }
 
+    reply.header('x-curl-equiv', result.getCurlCmd());
+
     reply.send(decodedResult);
   });
   done();
