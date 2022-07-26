@@ -6,7 +6,7 @@ import FastifyMultipart from '@fastify/multipart';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import * as createError from '@fastify/error';
 import { Type } from '@sinclair/typebox';
-import { ClarityAbi, ClarityType, ClarityValue, cvToJSON, cvToValue, deserializeCV, parseToCV, serializeCV } from '@stacks/transactions';
+import { ClarityAbi, ClarityAbiType, ClarityType, ClarityValue, cvToValue, deserializeCV, parseToCV, serializeCV } from '@stacks/transactions';
 import { fetchJson } from './util';
 
 
@@ -25,6 +25,95 @@ export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, Type
 
   fastify.get('/', (request, reply) => {
     reply.send({ status: 'ok' });
+  });
+
+  // POST /v2/map_entry/[Stacks Address]/[Contract Name]/[Map Name]
+  // https://github.com/stacks-network/stacks-blockchain/blob/master/docs/rpc-endpoints.md#post-v2map_entrystacks-addresscontract-namemap-name
+  fastify.get('/map-entry/:address/:contract/:map/:key', {
+    schema: {
+      querystring: Type.Object({
+        sender: Type.Optional(Type.String()),
+        key_encoded: Type.Optional(Type.Boolean({ 
+          default: false, 
+          description: 'If true then the function args are treated as already hex-encoded Clarity values. Otherwise, values will be coerced into the matching contract ABI type.' 
+        })),
+        no_unwrap: Type.Optional(Type.Boolean({
+          default: false,
+          description: 'If true, top-level Optional and Response values will not be unwrapped.'
+        }))
+      }),
+      params: Type.Object({
+        address: Type.String(),
+        contract: Type.String(),
+        map: Type.String(),
+        key: Type.String(),
+      })
+    }
+  }, async (request, reply) => {
+    const { address, contract, map, key } = request.params;
+    const getContractUrl = new URL(`/v2/contracts/interface/${address}/${contract}`, STACKS_API_ENDPOINT);
+    const contractInterface = await fetchJson<ClarityAbi>({ url: getContractUrl });
+    if (contractInterface.result !== 'ok') {
+      const FetchError = createError('CONTRACT_ABI_ERROR', 'Error fetching contract ABI: %s', 400);
+      throw new FetchError(JSON.stringify({ status: contractInterface.status, response: contractInterface.response }));
+    }
+
+    const mapEntry = contractInterface.response.maps.find(mapEntry => mapEntry.name === map) as unknown as {
+      name: string;
+      key: ClarityAbiType;
+      value: ClarityAbiType;
+    };
+    if (!mapEntry) {
+      const AbiError = createError('CONTRACT_ABI_ERROR', `Contract does not contain a map titled "${map}"`, 404);
+      throw new AbiError();
+    }
+
+    let serializedKey = request.params.key;
+    if (!request.query.key_encoded) {
+      try {
+        const clarityVal = parseToCV(request.params.key, mapEntry.key);
+        serializedKey = '0x' + serializeCV(clarityVal).toString('hex');
+      } catch (error) {
+        const AbiError = createError('CLARITY_SERIALIZE_ERROR', `Map key of type ${JSON.stringify(mapEntry.key)} could not be encoded from value "${request.params.key}": ${error}`, 400);
+        throw new AbiError();
+      }
+    }
+
+    const url = new URL(`/v2/map_entry/${address}/${contract}/${map}`, STACKS_API_ENDPOINT);
+    url.searchParams.set('proof', '0');
+
+    const result = await fetchJson<{data: string}>({ 
+      url, 
+      init: { method: 'POST', body: JSON.stringify(serializedKey) }
+    });
+    if (result.result !== 'ok') {
+      const CallReadError = createError('CONTRACT_DATA_MAP_READ_ERROR', 'Error contract map read: %s', 400);
+      throw new CallReadError(JSON.stringify({ status: result.status, response: result.response }));
+    }
+    if (!result.response.data) {
+      const CallReadError = createError('CONTRACT_DATA_MAP_READ_ERROR', 'Error contract map read: %s', 400);
+      throw new CallReadError(JSON.stringify({ status: result.status, response: result.response }));
+    }
+
+    let deserializedCv: ClarityValue;
+    try {
+      deserializedCv = deserializeCV(result.response.data);
+    } catch (error) {
+      const DeserializeError = createError('CLARITY_DESERIALIZE_ERROR', `Error deserializing Clarity value "${result.response.data}": ${error}`, 500);
+      throw new DeserializeError();
+    }
+    while (!request.query.no_unwrap && (deserializedCv.type === ClarityType.OptionalSome || deserializedCv.type === ClarityType.ResponseErr || deserializedCv.type === ClarityType.ResponseOk)) {
+      deserializedCv = deserializedCv.value;
+    }
+
+    let decodedResult = cvToValue(deserializedCv, true);
+    if (!request.query.no_unwrap && deserializedCv.type === ClarityType.OptionalNone) {
+      decodedResult = null;
+    }
+
+    reply.header('x-curl-equiv', result.getCurlCmd());
+
+    reply.send(decodedResult);
   });
 
   // POST /v2/contracts/call-read/[Stacks Address]/[Contract Name]/[Function Name]
