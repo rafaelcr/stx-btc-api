@@ -1,5 +1,5 @@
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import { ApiRoutes } from '../src/index';
+import { ApiRoutes } from '../src/routes';
 import * as dotenv from "dotenv";
 import Fastify from "fastify";
 
@@ -16,7 +16,7 @@ fastify.register(ApiRoutes, {
   prefix: '/'
 });
 
-export default async (req, res) => {
+export default async (req: any, res: any) => {
   await fastify.ready();
   fastify.server.emit('request', req, res);
 }
