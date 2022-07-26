@@ -5,6 +5,7 @@ import FastifyFormBody from '@fastify/formbody';
 import FastifyMultipart from '@fastify/multipart';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import * as createError from '@fastify/error';
+import FastifySwagger from '@fastify/swagger';
 import { Type } from '@sinclair/typebox';
 import { ClarityAbi, ClarityAbiType, ClarityType, ClarityValue, cvToValue, deserializeCV, parseToCV, serializeCV } from '@stacks/transactions';
 import { fetchJson } from './util';
@@ -13,6 +14,9 @@ import { fetchJson } from './util';
 export const STACKS_API_ENDPOINT = 'https://stacks-node-api.mainnet.stacks.co';
 
 export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, TypeBoxTypeProvider> = async (fastify, options, done) => {
+
+  // Expose OpenAPI v3 schema.
+  await fastify.register(FastifySwagger, { openapi: {}, exposeRoute: true });
 
   // Enable cross-origin access.
   await fastify.register(FastifyCors);
@@ -32,7 +36,6 @@ export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, Type
   fastify.get('/map-entry/:address/:contract/:map/:key', {
     schema: {
       querystring: Type.Object({
-        sender: Type.Optional(Type.String()),
         key_encoded: Type.Optional(Type.Boolean({ 
           default: false, 
           description: 'If true then the function args are treated as already hex-encoded Clarity values. Otherwise, values will be coerced into the matching contract ABI type.' 
@@ -43,10 +46,10 @@ export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, Type
         }))
       }),
       params: Type.Object({
-        address: Type.String(),
-        contract: Type.String(),
-        map: Type.String(),
-        key: Type.String(),
+        address: Type.String({examples: ['SPNWZ5V2TPWGQGVDR6T7B6RQ4XMGZ4PXTEE0VQ0S']}),
+        contract: Type.String({examples: ['crypto-graffiti']}),
+        map: Type.String({examples: ['nft-data']}),
+        key: Type.String({examples: ['42']}),
       })
     }
   }, async (request, reply) => {
@@ -123,7 +126,7 @@ export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, Type
         arg: Type.Union([
           Type.String(),
           Type.Array(Type.String())
-        ]),
+        ], {examples: ['149']}),
         sender: Type.Optional(Type.String()),
         args_encoded: Type.Optional(Type.Boolean({ 
           default: false, 
@@ -135,9 +138,9 @@ export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, Type
         }))
       }),
       params: Type.Object({
-        address: Type.String(),
-        contract: Type.String(),
-        fn: Type.String(),
+        address: Type.String({examples: ['SPNWZ5V2TPWGQGVDR6T7B6RQ4XMGZ4PXTEE0VQ0S']}),
+        contract: Type.String({examples: ['crypto-graffiti']}),
+        fn: Type.String({examples: ['get-price']}),
       })
     }
   }, async (request, reply) => {
