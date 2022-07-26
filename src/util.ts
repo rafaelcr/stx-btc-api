@@ -13,7 +13,7 @@ function throwFetchError(...args: [Error, string] | [string] | [Error]): never {
   }
 }
 
-export async function fetchJson<TOkResponse, TErrorResponse extends unknown>(args: {
+export async function fetchJson<TOkResponse = unknown, TErrorResponse = unknown>(args: {
   url: URL;
   init?: RequestInit | undefined;
   timeoutMs?: number;
