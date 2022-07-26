@@ -1,6 +1,7 @@
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { ApiRoutes } from '../src/routes';
 import * as dotenv from "dotenv";
+import { handleChainTipCache } from '../src/cache';
 import Fastify from "fastify";
 
 dotenv.config();
@@ -11,7 +12,7 @@ const fastify = Fastify({
   logger: true,
 }).withTypeProvider<TypeBoxTypeProvider>();
 
-// Register your application as a normal plugin.
+fastify.addHook('preHandler', handleChainTipCache);
 fastify.register(ApiRoutes, {
   prefix: '/'
 });
