@@ -10,7 +10,7 @@ import { ClarityAbi, ClarityType, ClarityValue, cvToJSON, cvToValue, deserialize
 import { fetchJson } from './util';
 
 
-const STACKS_API_ENDPOINT = 'https://stacks-node-api.mainnet.stacks.co';
+export const STACKS_API_ENDPOINT = 'https://stacks-node-api.mainnet.stacks.co';
 
 export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, TypeBoxTypeProvider> = async (fastify, options, done) => {
 
