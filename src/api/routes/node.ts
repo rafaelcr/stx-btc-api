@@ -73,13 +73,12 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
   // https://github.com/stacks-network/stacks-blockchain/blob/master/docs/rpc-endpoints.md#post-v2map_entrystacks-addresscontract-namemap-name
   fastify.get('/map-entry/:address/:contract/:map/:key', {
     schema: {
+      description: 'Helper wrapping the POST [`/v2/map_entry/{address}/{contract}/{map}` endpoint](https://github.com/stacks-network/stacks-blockchain/blob/master/docs/rpc-endpoints.md#post-v2map_entrystacks-addresscontract-namemap-name). The provided map key value is automatically converted into the correct serialized Clarity value. The Clarity response is automatically decoded into JSON. The endpoint uses the GET method so http caching is possible.',
       querystring: Type.Object({
         key_encoded: Type.Optional(Type.Boolean({ 
-          default: false, 
           description: 'If true then the function args are treated as already hex-encoded Clarity values. Otherwise, values will be coerced into the matching contract ABI type.' 
         })),
         no_unwrap: Type.Optional(Type.Boolean({
-          default: false,
           description: 'If true, top-level Optional and Response values will not be unwrapped.'
         }))
       }),
@@ -154,21 +153,20 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
 
     reply.header('x-curl-equiv', result.getCurlCmd());
 
-    reply.type('application/json').send(decodedResult);
+    reply.type('application/json').send(JSON.stringify(decodedResult, null, 2));
   });
 
   // POST /v2/contracts/call-read/[Stacks Address]/[Contract Name]/[Function Name]
   fastify.get('/call-fn/:address/:contract/:fn',  {
     schema: {
+      description: 'Helper wrapping the POST [`/v2/contracts/call-read/{address}/{contract}/{function}` endpoint](https://github.com/stacks-network/stacks-blockchain/blob/master/docs/rpc-endpoints.md#post-v2contractscall-readstacks-addresscontract-namefunction-name). The provided function arguments are automatically converted into the correct serialized Clarity values. The Clarity response is automatically decoded into JSON. The endpoint uses the GET method so http caching is possible.',
       querystring: Type.Object({
         arg: Type.Array(Type.String({examples: ['149']})),
         sender: Type.Optional(Type.String()),
         args_encoded: Type.Optional(Type.Boolean({ 
-          default: false, 
           description: 'If true then the function args are treated as already hex-encoded Clarity values. Otherwise, values will be coerced into the matching contract ABI type.' 
         })),
         no_unwrap: Type.Optional(Type.Boolean({
-          default: false,
           description: 'If true, top-level Optional and Response values will not be unwrapped.'
         }))
       }),
@@ -251,7 +249,7 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
 
     reply.header('x-curl-equiv', result.getCurlCmd());
 
-    reply.type('application/json').send(decodedResult);
+    reply.type('application/json').send(JSON.stringify(decodedResult, null, 2));
   });
   done();
 }
