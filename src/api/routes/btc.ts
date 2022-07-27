@@ -6,7 +6,7 @@ import { fetchJson, getAddressInfo } from '../util';
 import { request, fetch as undiciFetch } from 'undici';
 import * as stacksApiClient from '@stacks/blockchain-api-client';
 import * as stackApiTypes from '@stacks/stacks-blockchain-api-types';
-import { BLOCKCHAIN_EXPLORER_ENDPOINT, BLOCKCHAIN_INFO_API_ENDPOINT, STACKS_API_ENDPOINT, STACKS_EXPLORER_ENDPOINT } from '../consts';
+import { BLOCKCHAIN_EXPLORER_ENDPOINT, BLOCKCHAIN_INFO_API_ENDPOINT, STACKS_API_ENDPOINT, STACKS_EXPLORER_ENDPOINT } from '../../consts';
 
 
 export const BtcRoutes: FastifyPluginCallback<

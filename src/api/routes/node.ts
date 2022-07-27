@@ -1,26 +1,18 @@
 import { Server } from 'http';
 import { FastifyPluginCallback } from 'fastify';
-import FastifyCors from '@fastify/cors';
 import FastifyFormBody from '@fastify/formbody';
 import FastifyMultipart from '@fastify/multipart';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import * as createError from '@fastify/error';
-import FastifySwagger from '@fastify/swagger';
 import { Type } from '@sinclair/typebox';
 import { ClarityAbi, ClarityAbiType, ClarityType, ClarityValue, cvToValue, deserializeCV, parseToCV, serializeCV } from '@stacks/transactions';
 import { fetchJson } from '../util';
 import { handleChainTipCache } from '../cache';
-import { STACKS_API_ENDPOINT } from '../consts';
+import { STACKS_API_ENDPOINT } from '../../consts';
 
 export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, TypeBoxTypeProvider> = async (fastify, options, done) => {
   // Add chain-tip cache
   fastify.addHook('preHandler', handleChainTipCache);
-
-  // Expose OpenAPI v3 schema.
-  await fastify.register(FastifySwagger, { openapi: {}, exposeRoute: true });
-
-  // Enable cross-origin access.
-  await fastify.register(FastifyCors);
 
   // Support parsing `content-type: application/x-www-form-urlencoded` bodies.
   await fastify.register(FastifyFormBody);
