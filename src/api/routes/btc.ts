@@ -38,10 +38,30 @@ export const BtcRoutes: FastifyPluginCallback<
     schema: {
       params: Type.Object({
         address: Type.String({
-          description: 'Specify either a Stacks or Bitcoin address',
+          description: 'Specify either an STX(Stacks) or btc () Bitcoin address',
           examples: ['SPRSDSRT18DS9R8Y2W13JTKF89NFHEGDWQPB78RE', '15XCtJkEDxE1nhFawvPY4QEkEyNywxNSfL'],
         }),
       })
+    },
+    response: {
+        200:{
+          description: "Success response",
+          type: 'object',
+          properties: {
+            "stacks" :Type.object({
+              address: Type.String({
+                description: 'Specify either an STX(Stacks) or btc () Bitcoin address',
+                examples: ['SPRSDSRT18DS9R8Y2W13JTKF89NFHEGDWQPB78RE', '15XCtJkEDxE1nhFawvPY4QEkEyNywxNSfL'],
+              }),
+              balance: Type.Integer({
+                description: 'balance description',
+                examples: ['0'],
+              }),
+
+            })
+
+          }
+        }
     }
   }, async (req, reply) => {
     const addrInfo = getAddressInfo(req.params.address, 'mainnet');
