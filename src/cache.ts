@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { STACKS_API_ENDPOINT } from "./routes/node";
+import { STACKS_API_ENDPOINT } from "./consts";
 import { fetchJson } from "./util";
 
 /**

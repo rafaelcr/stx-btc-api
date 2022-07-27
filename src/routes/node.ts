@@ -10,8 +10,7 @@ import { Type } from '@sinclair/typebox';
 import { ClarityAbi, ClarityAbiType, ClarityType, ClarityValue, cvToValue, deserializeCV, parseToCV, serializeCV } from '@stacks/transactions';
 import { fetchJson } from '../util';
 import { handleChainTipCache } from '../cache';
-
-export const STACKS_API_ENDPOINT = 'https://stacks-node-api.mainnet.stacks.co';
+import { STACKS_API_ENDPOINT } from '../consts';
 
 export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, TypeBoxTypeProvider> = async (fastify, options, done) => {
   // Add chain-tip cache
@@ -30,6 +29,10 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
   await fastify.register(FastifyMultipart, { attachFieldsToBody: 'keyValues' });
 
   fastify.get('/', (request, reply) => {
+    reply.redirect('/documentation');
+  });
+
+  fastify.get('/status', (request, reply) => {
     reply.send({ status: 'ok' });
   });
 
