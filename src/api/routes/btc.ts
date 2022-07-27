@@ -45,7 +45,20 @@ export const BtcRoutes: FastifyPluginCallback<
     },
     response: {
       200: Type.Object({
-        
+        description: "success response",
+        properties: {
+          stacks: Type.Object({
+            address: Type.String({
+              description: 'Specify either an STX(Stacks) or btc () Bitcoin address',
+              examples: ['SPRSDSRT18DS9R8Y2W13JTKF89NFHEGDWQPB78RE', '15XCtJkEDxE1nhFawvPY4QEkEyNywxNSfL'],
+            }),
+            balance: Type.Integer({
+              description: 'Balance for the stacks or btc address',
+              examples: ['0']
+            })
+          })
+        },
+
       })
     }
     
