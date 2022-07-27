@@ -8,7 +8,6 @@ import * as stacksApiClient from '@stacks/blockchain-api-client';
 import * as stackApiTypes from '@stacks/stacks-blockchain-api-types';
 import { BLOCKCHAIN_EXPLORER_ENDPOINT, BLOCKCHAIN_INFO_API_ENDPOINT, STACKS_API_ENDPOINT, STACKS_EXPLORER_ENDPOINT } from '../../consts';
 
-
 export const BtcRoutes: FastifyPluginCallback<
   Record<never, never>,
   Server,
@@ -66,7 +65,6 @@ export const BtcRoutes: FastifyPluginCallback<
       }
     }, null, 2));
   });
-
 
   fastify.get('/tx-btc-info/:txid', {
     schema: {
@@ -127,4 +125,41 @@ export const BtcRoutes: FastifyPluginCallback<
     reply.type('application/json').send(JSON.stringify(payload, null, 2));
   });
 
+  fastify.get('/stx-block', {
+    schema: {
+      querystring: Type.Object({
+        'btc-block': Type.Union([
+          Type.String({
+            description: 'A bitcoin block hash',
+            pattern: '^([0-9a-fA-F]{64})$',
+          }),
+          Type.Integer({
+            description: 'A bitcoin block height'
+          })
+        ], {
+          examples: ['00000000000000000007a5a46a5989b1e787346c3179a7e7d31ad99abdbc57c8', 746815],
+        }),
+      }),
+    }
+  }, async (req, reply) => {
+    let stxBlock: any;
+    if (typeof req.query['btc-block'] === 'string') {
+      const stxBlockRes = await request(
+        `${STACKS_API_ENDPOINT}/extended/v1/block/by_burn_block_hash/0x${req.query['btc-block']}`,
+        { method: 'GET' }
+      );
+      stxBlock = await stxBlockRes.body.json();
+    } else {
+      const stxBlockRes = await request(
+        `${STACKS_API_ENDPOINT}/extended/v1/block/by_burn_block_height/${req.query['btc-block']}`,
+        { method: 'GET' }
+      );
+      stxBlock = await stxBlockRes.body.json();
+    }
+    reply.type('application/json').send(JSON.stringify({
+      height: stxBlock.height,
+      hash: stxBlock.hash,
+      parent_block_hash: stxBlock.parent_block_hash
+    }, null, 2));
+  });
 }
