@@ -116,7 +116,7 @@ export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, Type
 
     reply.header('x-curl-equiv', result.getCurlCmd());
 
-    reply.send(decodedResult);
+    reply.type('application/json').send(decodedResult);
   });
 
   // POST /v2/contracts/call-read/[Stacks Address]/[Contract Name]/[Function Name]
