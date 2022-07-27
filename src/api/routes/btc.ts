@@ -6,6 +6,7 @@ import { fetchJson, getAddressInfo } from '../util';
 import { request, fetch as undiciFetch } from 'undici';
 import * as stacksApiClient from '@stacks/blockchain-api-client';
 import * as stackApiTypes from '@stacks/stacks-blockchain-api-types';
+import BigNumber from 'bignumber.js';
 import { BLOCKCHAIN_EXPLORER_ENDPOINT, BLOCKCHAIN_INFO_API_ENDPOINT, STACKS_API_ENDPOINT, STACKS_EXPLORER_ENDPOINT } from '../../consts';
 
 export const BtcRoutes: FastifyPluginCallback<
@@ -38,7 +39,7 @@ export const BtcRoutes: FastifyPluginCallback<
       params: Type.Object({
         address: Type.String({
           description: 'Specify either a Stacks or Bitcoin address',
-          examples: ['SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7', '1FzTxL9Mxnm2fdmnQEArfhzJHevwbvcH6d'],
+          examples: ['SPRSDSRT18DS9R8Y2W13JTKF89NFHEGDWQPB78RE', '15XCtJkEDxE1nhFawvPY4QEkEyNywxNSfL'],
         }),
       })
     }
@@ -49,19 +50,21 @@ export const BtcRoutes: FastifyPluginCallback<
       `${STACKS_API_ENDPOINT}/extended/v1/address/${addrInfo.stacks}/balances`, { method: 'GET' }
     );
     const stxBalance = await stxBalanceReq.body.json();
+    const stxBalanceFormatted = new BigNumber(stxBalance.stx.balance).shiftedBy(-6).toFixed(6);
     const btcBalanceReq = await request(
       `${BLOCKCHAIN_INFO_API_ENDPOINT}/rawaddr/${addrInfo.bitcoin}?limit=0`
     );
     const btcBalance = await btcBalanceReq.body.json();
+    const btcBalanceFormatted = new BigNumber(btcBalance.final_balance).shiftedBy(-8).toFixed(8);
 
     reply.type('application/json').send(JSON.stringify({
       stacks: {
         address: addrInfo.stacks,
-        balance: stxBalance.stx.balance
+        balance: stxBalanceFormatted
       },
       bitcoin: {
         address: addrInfo.bitcoin,
-        balance: btcBalance.final_balance.toString()
+        balance: btcBalanceFormatted
       }
     }, null, 2));
   });
