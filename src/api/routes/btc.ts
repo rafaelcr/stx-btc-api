@@ -44,9 +44,10 @@ export const BtcRoutes: FastifyPluginCallback<
       })
     },
     response: {
-      200:{
-        description: "Success response",
-        type: 'object',
+      200: Type.Object({
+        
+      })
+    }
     
   }, async (req, reply) => {
     const addrInfo = getAddressInfo(req.params.address, 'mainnet');
