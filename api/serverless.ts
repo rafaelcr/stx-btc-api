@@ -1,7 +1,7 @@
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import { ApiRoutes } from '../src/routes';
+import { NodeRoutes } from '../src/routes/node';
+import { BtcRoutes } from '../src/routes/btc';
 import * as dotenv from "dotenv";
-import { handleChainTipCache } from '../src/cache';
 import Fastify from "fastify";
 
 dotenv.config();
@@ -12,10 +12,8 @@ const fastify = Fastify({
   logger: true,
 }).withTypeProvider<TypeBoxTypeProvider>();
 
-fastify.addHook('preHandler', handleChainTipCache);
-fastify.register(ApiRoutes, {
-  prefix: '/'
-});
+fastify.register(NodeRoutes);
+fastify.register(BtcRoutes);
 
 export default async (req: any, res: any) => {
   await fastify.ready();

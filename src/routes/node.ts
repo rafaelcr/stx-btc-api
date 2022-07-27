@@ -8,11 +8,14 @@ import * as createError from '@fastify/error';
 import FastifySwagger from '@fastify/swagger';
 import { Type } from '@sinclair/typebox';
 import { ClarityAbi, ClarityAbiType, ClarityType, ClarityValue, cvToValue, deserializeCV, parseToCV, serializeCV } from '@stacks/transactions';
-import { fetchJson, getAddressInfo } from './util';
+import { fetchJson } from '../util';
+import { handleChainTipCache } from '../cache';
 
 export const STACKS_API_ENDPOINT = 'https://stacks-node-api.mainnet.stacks.co';
 
-export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, TypeBoxTypeProvider> = async (fastify, options, done) => {
+export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, TypeBoxTypeProvider> = async (fastify, options, done) => {
+  // Add chain-tip cache
+  fastify.addHook('preHandler', handleChainTipCache);
 
   // Expose OpenAPI v3 schema.
   await fastify.register(FastifySwagger, { openapi: {}, exposeRoute: true });
@@ -28,26 +31,6 @@ export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, Type
 
   fastify.get('/', (request, reply) => {
     reply.send({ status: 'ok' });
-  });
-
-  fastify.get('/addr/:address', {
-    schema: {
-      params: Type.Object({
-        address: Type.String({
-          description: 'Specify either a Stacks or Bitcoin address',
-          examples: ['SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7', '1FzTxL9Mxnm2fdmnQEArfhzJHevwbvcH6d'],
-        }),
-      }),
-      querystring: Type.Object({
-        network: Type.Optional(Type.Union([Type.Literal('mainnet'), Type.Literal('testnet')], {
-          description: 'Specify if the address should be converted to mainnet or testnet',
-          examples: ['mainnet', 'testnet'],
-        }))
-      }),
-    }
-  }, (request, reply) => {
-    const addrInfo = getAddressInfo(request.params.address, request.query.network);
-    reply.type('application/json').send(addrInfo);
   });
 
   // POST /v2/map_entry/[Stacks Address]/[Contract Name]/[Map Name]
