@@ -20,6 +20,55 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
   // Support parsing `content-type: multipart/form-data` bodies.
   await fastify.register(FastifyMultipart, { attachFieldsToBody: 'keyValues' });
 
+  // GET /v2/data_var/[Stacks Address]/[Contract Name]/[Var Name]
+  fastify.get('/data-var/:address/:contract/:var', {
+    schema: {
+      description: 'Helper wrapping the POST [`/v2/data_var/{address}/{contract}/{var-name}` endpoint](https://github.com/stacks-network/stacks-blockchain/blob/master/docs/rpc-endpoints.md#get-v2data_varstacks-addresscontract-namevar-name). The Clarity response is automatically decoded into JSON.',
+      params: Type.Object({
+        address: Type.String({examples: ['SPXG42Y7WDTMZF5MPV02C3AWY1VNP9FH9C23PRXH']}),
+        contract: Type.String({examples: ['Marbling']}),
+        var: Type.String({examples: ['base-uri']}),
+      }),
+      querystring: Type.Object({
+        no_unwrap: Type.Optional(Type.Boolean({
+          description: 'If true, top-level Optional and Response values will not be unwrapped.'
+        }))
+      }),
+    }
+  }, async (request, reply) => {
+    const { address, contract, var: dataVar } = request.params;
+    const url = new URL(`/v2/data_var/${address}/${contract}/${dataVar}`, STACKS_API_ENDPOINT);
+    url.searchParams.set('proof', '0');
+
+    const result = await fetchJson<{data: string}>({ url });
+    if (result.result !== 'ok') {
+      const DataVarError = createError('CONTRACT_DATA_VAR_READ_ERROR', 'Error contract data var read: %s', 400);
+      throw new DataVarError(JSON.stringify({ status: result.status, response: result.response }));
+    }
+    if (!result.response.data) {
+      const DataVarError = createError('CONTRACT_DATA_VAR_READ_ERROR', 'Error contract data var read: %s', 400);
+      throw new DataVarError(JSON.stringify({ status: result.status, response: result.response }));
+    }
+
+    let deserializedCv: ClarityValue;
+    try {
+      deserializedCv = deserializeCV(result.response.data);
+    } catch (error) {
+      const DeserializeError = createError('CLARITY_DESERIALIZE_ERROR', `Error deserializing Clarity value "${result.response.data}": ${error}`, 500);
+      throw new DeserializeError();
+    }
+    while (!request.query.no_unwrap && (deserializedCv.type === ClarityType.OptionalSome || deserializedCv.type === ClarityType.ResponseErr || deserializedCv.type === ClarityType.ResponseOk)) {
+      deserializedCv = deserializedCv.value;
+    }
+
+    let decodedResult = cvToValue(deserializedCv, true);
+    if (!request.query.no_unwrap && deserializedCv.type === ClarityType.OptionalNone) {
+      decodedResult = null;
+    }
+
+    reply.type('application/json').send(JSON.stringify(decodedResult, null, 2));
+  });
+
   // POST /v2/map_entry/[Stacks Address]/[Contract Name]/[Map Name]
   // https://github.com/stacks-network/stacks-blockchain/blob/master/docs/rpc-endpoints.md#post-v2map_entrystacks-addresscontract-namemap-name
   fastify.get('/map-entry/:address/:contract/:map/:key', {
