@@ -131,14 +131,14 @@ export const BtcRoutes: FastifyPluginCallback<
         'btc-block': Type.Union([
           Type.String({
             description: 'A bitcoin block hash',
-            examples: ['00000000000000000007a5a46a5989b1e787346c3179a7e7d31ad99abdbc57c8'],
             pattern: '^([0-9a-fA-F]{64})$',
           }),
           Type.Integer({
-            description: 'A bitcoin block height',
-            examples: [746815]
+            description: 'A bitcoin block height'
           })
-        ]),
+        ], {
+          examples: ['00000000000000000007a5a46a5989b1e787346c3179a7e7d31ad99abdbc57c8', 746815],
+        }),
       }),
     }
   }, async (req, reply) => {
