@@ -20,14 +20,6 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
   // Support parsing `content-type: multipart/form-data` bodies.
   await fastify.register(FastifyMultipart, { attachFieldsToBody: 'keyValues' });
 
-  fastify.get('/', (request, reply) => {
-    reply.redirect('/documentation');
-  });
-
-  fastify.get('/status', (request, reply) => {
-    reply.send({ status: 'ok' });
-  });
-
   // POST /v2/map_entry/[Stacks Address]/[Contract Name]/[Map Name]
   // https://github.com/stacks-network/stacks-blockchain/blob/master/docs/rpc-endpoints.md#post-v2map_entrystacks-addresscontract-namemap-name
   fastify.get('/map-entry/:address/:contract/:map/:key', {

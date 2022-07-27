@@ -17,5 +17,13 @@ export const Api: FastifyPluginCallback<
   fastify.register(NodeRoutes);
   fastify.register(BtcRoutes);
 
+  fastify.get('/', (request, reply) => {
+    reply.redirect('/documentation');
+  });
+
+  fastify.get('/status', (request, reply) => {
+    reply.send({ status: 'ok' });
+  });
+
   done();
 }
