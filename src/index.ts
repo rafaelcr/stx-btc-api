@@ -1,15 +1,15 @@
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import Fastify from 'fastify';
-import { handleChainTipCache } from './cache';
-import { ApiRoutes } from './routes';
+import { BtcRoutes } from './routes/btc';
+import { NodeRoutes } from './routes/node';
 
 const fastify = Fastify({
   trustProxy: true,
   logger: true,
 }).withTypeProvider<TypeBoxTypeProvider>();
 
-fastify.addHook('preHandler', handleChainTipCache);
-fastify.register(ApiRoutes);
+fastify.register(NodeRoutes);
+fastify.register(BtcRoutes);
 
 fastify.listen({ host: '127.0.0.1', port: 3000 }, (err, address) => {
   if (err) {
