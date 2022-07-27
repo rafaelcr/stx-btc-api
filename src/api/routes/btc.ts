@@ -31,7 +31,7 @@ export const BtcRoutes: FastifyPluginCallback<
     }
   }, (request, reply) => {
     const addrInfo = getAddressInfo(request.params.address, request.query.network);
-    reply.type('application/json').send(addrInfo);
+    reply.type('application/json').send(JSON.stringify(addrInfo, null, 2));
   });
 
   fastify.get('/addr/:address/balances', {
@@ -55,7 +55,7 @@ export const BtcRoutes: FastifyPluginCallback<
     );
     const btcBalance = await btcBalanceReq.body.json();
 
-    reply.type('application/json').send({
+    reply.type('application/json').send(JSON.stringify({
       stacks: {
         address: addrInfo.stacks,
         balance: stxBalance.stx.balance
@@ -64,7 +64,7 @@ export const BtcRoutes: FastifyPluginCallback<
         address: addrInfo.bitcoin,
         balance: btcBalance.final_balance.toString()
       }
-    });
+    }, null, 2));
   });
 
 
