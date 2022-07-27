@@ -123,10 +123,7 @@ export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, Type
   fastify.get('/call-fn/:address/:contract/:fn',  {
     schema: {
       querystring: Type.Object({
-        arg: Type.Union([
-          Type.String(),
-          Type.Array(Type.String())
-        ], {examples: ['149']}),
+        arg: Type.Array(Type.String({examples: ['149']})),
         sender: Type.Optional(Type.String()),
         args_encoded: Type.Optional(Type.Boolean({ 
           default: false, 
@@ -153,7 +150,7 @@ export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, Type
       throw new FetchError(JSON.stringify({ status: contractInterface.status, response: contractInterface.response }));
     }
 
-    let args = typeof request.query.arg === 'string' ? [request.query.arg] : request.query.arg;
+    let args = request.query.arg;
     const functionAbi = contractInterface.response.functions.find(abiFn => abiFn.name === fn);
     if (!functionAbi) {
       const AbiError = createError('CONTRACT_ABI_ERROR', `Contract does not contain a function titled "${fn}"`, 404);
@@ -216,7 +213,7 @@ export const ApiRoutes: FastifyPluginCallback<Record<never, never>, Server, Type
 
     reply.header('x-curl-equiv', result.getCurlCmd());
 
-    reply.send(decodedResult);
+    reply.type('application/json').send(decodedResult);
   });
   done();
 }
