@@ -180,7 +180,14 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
         address: Type.String({examples: ['SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR']}),
         contract: Type.String({examples: ['arkadiko-swap-v2-1']}),
         fn: Type.String({examples: ['get-pair-details']}),
-      })
+      }),
+    
+      response: {
+        200: Type.String({
+          description: "Success response",
+            examples:[500000000],
+        })
+      }
     }
   }, async (request, reply) => {
     const { address, contract, fn } = request.params;
