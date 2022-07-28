@@ -13,8 +13,8 @@ export const Api: FastifyPluginCallback<
 > = (fastify, options, done) => {
   fastify.register(FastifySwagger, { openapi: {
     info: {
-      title: 'Stacks + Bitcoin utils',
-      description: 'Easy to use endpoints to retrieve Bitcoin information related to Stacks, and automatic Clarity encoding & decoding for various Stacks RPC endpoints.',
+      title: 'Stacks + Bitcoin Utility Service',
+      description: '#### Simple, developer-friendly APIs for various uses. \n * Easy to use endpoints to retrieve Bitcoin information related to Stacks and vice versa. \n * Automatic Clarity encoding & decoding for various Stacks RPC endpoints. \n * Chain-tip based HTTP caching support for expensive Stacks RPC endpoints.',
       version: '0.0.1',
     },
     externalDocs: {
