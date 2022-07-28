@@ -143,7 +143,7 @@ export const BtcRoutes: FastifyPluginCallback<
       minerStxAddressExplorer: stxMinerAddrExplorerLink?.toString() ?? null,
     };
 
-    reply.type('application/json').send(JSON.stringify(payload, null, 2));
+    reply.type('application/json').send(payload);
   });
 
   fastify.get('/btc-info-from-stx-block/:block', {
@@ -219,7 +219,7 @@ export const BtcRoutes: FastifyPluginCallback<
       minerStxAddressExplorer: stxMinerAddrExplorerLink?.toString() ?? null,
     };
 
-    reply.type('application/json').send(JSON.stringify(payload, null, 2));
+    reply.type('application/json').send(payload);
   });
 
   fastify.get('/stx-block', {
@@ -255,10 +255,10 @@ export const BtcRoutes: FastifyPluginCallback<
       );
       stxBlock = await stxBlockRes.body.json();
     }
-    reply.type('application/json').send(JSON.stringify({
+    reply.type('application/json').send({
       height: stxBlock.height,
       hash: stxBlock.hash,
       parent_block_hash: stxBlock.parent_block_hash
-    }, null, 2));
+    });
   });
 }

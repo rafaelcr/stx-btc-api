@@ -74,7 +74,7 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
       decodedResult = null;
     }
 
-    reply.type('application/json').send(JSON.stringify(decodedResult, null, 2));
+    reply.type('application/json').send(decodedResult);
   });
 
   // POST /v2/map_entry/[Stacks Address]/[Contract Name]/[Map Name]
@@ -163,7 +163,7 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
 
     reply.header('x-curl-equiv', result.getCurlCmd());
 
-    reply.type('application/json').send(JSON.stringify(decodedResult, null, 2));
+    reply.type('application/json').send(decodedResult);
   });
 
   // POST /v2/contracts/call-read/[Stacks Address]/[Contract Name]/[Function Name]
@@ -268,7 +268,7 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
 
     reply.header('x-curl-equiv', result.getCurlCmd());
 
-    reply.type('application/json').send(JSON.stringify(decodedResult, null, 2));
+    reply.type('application/json').send(decodedResult);
   });
   done();
 }
