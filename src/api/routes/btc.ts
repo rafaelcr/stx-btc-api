@@ -36,28 +36,49 @@ export const BtcRoutes: FastifyPluginCallback<
 
   fastify.get('/addr/:address/balances', {
     schema: {
+      description: "Get balance for a given address",
+      tags: ["get balance"],
       operationId: 'getUserAddress',
       params: Type.Object({
         address: Type.String({
-          description: 'Specify either an STX(Stacks) or BTC(Bitcoin) address',
+          description: 'Specify either an STX(Stacks) or BTC(Bitcoin) address. The below example takes STX address as input.',
           examples: ['SPRSDSRT18DS9R8Y2W13JTKF89NFHEGDWQPB78RE', '15XCtJkEDxE1nhFawvPY4QEkEyNywxNSfL'],
         }),
       }),
       response: {
-        200: Type.Object({
-          description: "success response",
-          properties: {
+        200: Type.String({
+            description: "Success response",
+            examples:[{
+              "stacks": {
+                "address": "SPRSDSRT18DS9R8Y2W13JTKF89NFHEGDWQPB78RE",
+                "balance": "0.000000"
+              },
+              "bitcoin": {
+                "address": "15XCtJkEDxE1nhFawvPY4QEkEyNywxNSfL",
+                "balance": "3.47307619"
+              }
+            }],
+            
             stacks: Type.Object({
               address: Type.String({
-                description: 'Specify either an STX(Stacks) or BTC(Bitcoin) address',
-                examples: ['SPRSDSRT18DS9R8Y2W13JTKF89NFHEGDWQPB78RE', '15XCtJkEDxE1nhFawvPY4QEkEyNywxNSfL'],
+                description: 'STX(Stacks) address',
+                examples: ['SPRSDSRT18DS9R8Y2W13JTKF89NFHEGDWQPB78RE'],
               }),
-              balance: Type.Integer({
+              balance: Type.Number({
                 description: 'Balance for the stacks or BTC address',
                 examples: ['0']
               })
-            })
-          },
+            }),
+            bitcoin: Type.Object({
+              address: Type.String({
+              description: 'BTC(Bitcoin) address',
+              examples: ['15XCtJkEDxE1nhFawvPY4QEkEyNywxNSfL'],
+            }),
+            balance: Type.Number({
+              description: 'Balance for the stacks or BTC address',
+              examples: ['0']
+            })})
+
   
         })
       }
