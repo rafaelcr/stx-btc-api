@@ -16,6 +16,9 @@ export const BtcRoutes: FastifyPluginCallback<
 > = async (fastify, options, done) => {
   fastify.get('/addr/:address', {
     schema: {
+      tags: ['Utils'],
+      summary: 'Convert between a Stacks or Bitcoin address',
+      description: 'Provide either a Stacks or Bitcoin address, and receive the Stacks address, Bitcoin address, and network version.',
       params: Type.Object({
         address: Type.String({
           description: 'Specify either a Stacks or Bitcoin address',
@@ -36,6 +39,8 @@ export const BtcRoutes: FastifyPluginCallback<
 
   fastify.get('/addr/:address/balances', {
     schema: {
+      tags: ['Bitcoin info'],
+      summary: 'Get the STX and BTC balance for an address',
       params: Type.Object({
         address: Type.String({
           description: 'Specify either a Stacks or Bitcoin address',
@@ -71,6 +76,8 @@ export const BtcRoutes: FastifyPluginCallback<
 
   fastify.get('/btc-info-from-stx-tx/:txid', {
     schema: {
+      tags: ['Bitcoin info'],
+      summary: 'Get Bitcoin information for a Stacks tx',
       description: 'Returns Bitcoin related information for a given Stacks transaction',
       params: Type.Object({
         txid: Type.String({
@@ -131,6 +138,8 @@ export const BtcRoutes: FastifyPluginCallback<
 
   fastify.get('/btc-info-from-stx-block/:block', {
     schema: {
+      tags: ['Bitcoin info'],
+      summary: 'Get Bitcoin information for a Stacks block',
       description: 'Returns Bitcoin related information for a given Stacks block',
       params: Type.Object({
         block: Type.Union([
@@ -205,6 +214,8 @@ export const BtcRoutes: FastifyPluginCallback<
 
   fastify.get('/stx-block', {
     schema: {
+      tags: ['Bitcoin info'],
+      summary: 'Get the Stacks block associated with a Bitcoin block',
       querystring: Type.Object({
         'btc-block': Type.Union([
           Type.String({
