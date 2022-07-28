@@ -31,6 +31,12 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
         contract: Type.String({examples: ['Marbling']}),
         var: Type.String({examples: ['base-uri']}),
       }),
+      response: {
+        200: Type.String({
+          description: "Success response",
+            examples:["ipfs://QmXmuoMt8V5YpnZr5PT4qSDoF4hX6yuL6QmW9zEyizZ9oe/"],
+        })
+      },
       querystring: Type.Object({
         no_unwrap: Type.Optional(Type.Boolean({
           description: 'If true, top-level Optional and Response values will not be unwrapped.'
