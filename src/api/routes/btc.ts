@@ -25,6 +25,16 @@ export const BtcRoutes: FastifyPluginCallback<
           examples: ['SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7', '1FzTxL9Mxnm2fdmnQEArfhzJHevwbvcH6d'],
         }),
       }),
+      response: {
+        200: Type.String({
+          description: "Success response",
+            examples:[{
+                "stacks": "SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7",
+                "bitcoin": "1FzTxL9Mxnm2fdmnQEArfhzJHevwbvcH6d",
+                "network": "mainnet"
+              }],
+        })
+      },
       querystring: Type.Object({
         network: Type.Optional(Type.Union([Type.Literal('mainnet'), Type.Literal('testnet')], {
           description: 'Specify if the address should be converted to mainnet or testnet',
@@ -62,7 +72,7 @@ export const BtcRoutes: FastifyPluginCallback<
     const btcBalance = await btcBalanceReq.body.json();
     const btcBalanceFormatted = new BigNumber(btcBalance.final_balance).shiftedBy(-8).toFixed(8);
 
-    reply.type('application/json').send(JSON.stringify({
+    reply.type('application/json').send({
       stacks: {
         address: addrInfo.stacks,
         balance: stxBalanceFormatted
@@ -71,7 +81,7 @@ export const BtcRoutes: FastifyPluginCallback<
         address: addrInfo.bitcoin,
         balance: btcBalanceFormatted
       }
-    }, null, 2));
+    });
   });
 
   fastify.get('/btc-info-from-stx-tx/:txid', {
