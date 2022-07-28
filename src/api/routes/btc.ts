@@ -249,6 +249,50 @@ export const BtcRoutes: FastifyPluginCallback<
           examples: ['0x529ed0f3ef381bbb25e9ffe46db87aa3d3de185e31129004a4da010495cc0daa', 69296],
         })
       }),
+      response: {
+        200: Type.Object({
+              stacksBlockHash:  Type.String({
+              description:'Stacks block hash',
+              examples:['0x529ed0f3ef381bbb25e9ffe46db87aa3d3de185e31129004a4da010495cc0daa']
+                }),
+              stacksBlockExplorer: Type.String({
+              description:'Stacks block explorer',
+              examples:['https://explorer.stacks.co/block/0x529ed0f3ef381bbb25e9ffe46db87aa3d3de185e31129004a4da010495cc0daa?chain=mainnet']
+            }),
+            bitcoinBlockHash: Type.String({
+              description:'Bitcoin Block Hash',
+              examples:['00000000000000000003e70c11501aaba9c0b21229ec75b6be9af4649cd2f8d9']
+            }),
+            bitcoinBlockExplorer: Type.String({
+              description:'Bitcoin block explorer',
+              examples:['https://www.blockchain.com/btc/block/00000000000000000003e70c11501aaba9c0b21229ec75b6be9af4649cd2f8d9']
+            }),
+            bitcoinTx: Type.String({
+              description:'Bitcoin Tx',
+              examples:['d62956b9a1d7cc39e9f6210e3753bfaf10e5c6709b17245c1335befa3fe06d4c']
+            }),
+            bitcoinTxExplorer: Type.String({
+              description:'Bitcoin Tx Explorer',
+              examples:['https://www.blockchain.com/btc/tx/d62956b9a1d7cc39e9f6210e3753bfaf10e5c6709b17245c1335befa3fe06d4c']
+            }),
+            minerBtcAddress: Type.String({
+              description:'Miner Btc Address',
+              examples:['18HTpsp3YuFqndkxxCJA6PXdtaFUQCfwK6']
+            }),
+            minerBtcAddressExplorer: Type.String({
+              description:'Miner Btc Address Explorer',
+              examples:['https://www.blockchain.com/btc/address/18HTpsp3YuFqndkxxCJA6PXdtaFUQCfwK6']
+            }),
+            minerStxAddress: Type.String({
+              description:'Miner Stx Address',
+              examples:['SP17YBVDTV7FNWDM5Y8PWXB9MQRT0FTWZXQBFA97A']
+            }),
+            minerStxAddressExplorer: Type.String({
+              description:'Miner Stx Address Explorer',
+              examples:['https://explorer.stacks.co/address/SP17YBVDTV7FNWDM5Y8PWXB9MQRT0FTWZXQBFA97A?chain=mainnet']
+            }),
+        })
+      }
     }
   }, async (request, reply) => {
     const { block } = request.params;
@@ -283,11 +327,11 @@ export const BtcRoutes: FastifyPluginCallback<
     const btcTxDataUrl = new URL(`/rawtx/${btcMinerTx}`, BLOCKCHAIN_INFO_API_ENDPOINT);
 
     const btcTxData = await fetchJson<{inputs: { prev_out: { addr: string }}[]}>({ url: btcTxDataUrl });
-    const btcMinerAddr = btcTxData.result === 'ok' ? (btcTxData.response.inputs[0]?.prev_out?.addr ?? null) : null;
+    const btcMinerAddr = btcTxData.result === 'ok' ? (btcTxData.response.inputs[0]?.prev_out?.addr ?? null) : "";
     const btcMinerAddrExplorerLink = new URL(`/btc/address/${btcMinerAddr}`, BLOCKCHAIN_EXPLORER_ENDPOINT);
 
-    const stxMinerAddr = btcMinerAddr ? getAddressInfo(btcMinerAddr).stacks : null;
-    const stxMinerAddrExplorerLink = stxMinerAddr ? new URL(`/address/${stxMinerAddr}?chain=mainnet`, STACKS_EXPLORER_ENDPOINT) : null;
+    const stxMinerAddr = btcMinerAddr ? getAddressInfo(btcMinerAddr).stacks : "";
+    const stxMinerAddrExplorerLink = stxMinerAddr ? new URL(`/address/${stxMinerAddr}?chain=mainnet`, STACKS_EXPLORER_ENDPOINT) : "";
 
     const payload = {
       stacksBlockHash: stxBlockHash,
@@ -299,7 +343,7 @@ export const BtcRoutes: FastifyPluginCallback<
       minerBtcAddress: btcMinerAddr,
       minerBtcAddressExplorer: btcMinerAddrExplorerLink.toString(),
       minerStxAddress: stxMinerAddr,
-      minerStxAddressExplorer: stxMinerAddrExplorerLink?.toString() ?? null,
+      minerStxAddressExplorer: stxMinerAddrExplorerLink?.toString() ?? "",
     };
 
     reply.type('application/json').send(payload);
