@@ -23,6 +23,8 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
   // GET /v2/data_var/[Stacks Address]/[Contract Name]/[Var Name]
   fastify.get('/data-var/:address/:contract/:var', {
     schema: {
+      tags: ['Clarity query helpers'],
+      summary: 'Look up a Clarity contract data variable',
       description: 'Helper wrapping the POST [`/v2/data_var/{address}/{contract}/{var-name}` endpoint](https://github.com/stacks-network/stacks-blockchain/blob/master/docs/rpc-endpoints.md#get-v2data_varstacks-addresscontract-namevar-name). The Clarity response is automatically decoded into JSON.',
       params: Type.Object({
         address: Type.String({examples: ['SPXG42Y7WDTMZF5MPV02C3AWY1VNP9FH9C23PRXH']}),
@@ -73,6 +75,8 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
   // https://github.com/stacks-network/stacks-blockchain/blob/master/docs/rpc-endpoints.md#post-v2map_entrystacks-addresscontract-namemap-name
   fastify.get('/map-entry/:address/:contract/:map/:key', {
     schema: {
+      tags: ['Clarity query helpers'],
+      summary: 'Look up a Clarity contract map variable by key',
       description: 'Helper wrapping the POST [`/v2/map_entry/{address}/{contract}/{map}` endpoint](https://github.com/stacks-network/stacks-blockchain/blob/master/docs/rpc-endpoints.md#post-v2map_entrystacks-addresscontract-namemap-name). The provided map key value is automatically converted into the correct serialized Clarity value. The Clarity response is automatically decoded into JSON. The endpoint uses the GET method so http caching is possible.',
       querystring: Type.Object({
         key_encoded: Type.Optional(Type.Boolean({ 
@@ -159,9 +163,11 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
   // POST /v2/contracts/call-read/[Stacks Address]/[Contract Name]/[Function Name]
   fastify.get('/call-fn/:address/:contract/:fn',  {
     schema: {
+      tags: ['Clarity query helpers'],
+      summary: 'Perform a read-only Clarity function call',
       description: 'Helper wrapping the POST [`/v2/contracts/call-read/{address}/{contract}/{function}` endpoint](https://github.com/stacks-network/stacks-blockchain/blob/master/docs/rpc-endpoints.md#post-v2contractscall-readstacks-addresscontract-namefunction-name). The provided function arguments are automatically converted into the correct serialized Clarity values. The Clarity response is automatically decoded into JSON. The endpoint uses the GET method so http caching is possible.',
       querystring: Type.Object({
-        arg: Type.Array(Type.String({examples: ['149']})),
+        arg: Type.Array(Type.String(), {examples: [['SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin', 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.usda-token']]}),
         sender: Type.Optional(Type.String()),
         args_encoded: Type.Optional(Type.Boolean({ 
           description: 'If true then the function args are treated as already hex-encoded Clarity values. Otherwise, values will be coerced into the matching contract ABI type.' 
@@ -171,9 +177,9 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
         }))
       }),
       params: Type.Object({
-        address: Type.String({examples: ['SPNWZ5V2TPWGQGVDR6T7B6RQ4XMGZ4PXTEE0VQ0S']}),
-        contract: Type.String({examples: ['crypto-graffiti']}),
-        fn: Type.String({examples: ['get-price']}),
+        address: Type.String({examples: ['SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR']}),
+        contract: Type.String({examples: ['arkadiko-swap-v2-1']}),
+        fn: Type.String({examples: ['get-pair-details']}),
       })
     }
   }, async (request, reply) => {
