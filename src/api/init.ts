@@ -17,6 +17,10 @@ export const Api: FastifyPluginCallback<
       description: 'Easy to use endpoints to retrieve Bitcoin information related to Stacks, and automatic Clarity encoding & decoding for various Stacks RPC endpoints.',
       version: '0.0.1',
     },
+    externalDocs: {
+      url: 'https://github.com/rafaelcr/stx-btc-api',
+      description: 'Source Repository'
+    },
     tags: [{
       name: 'Utils',
       description: 'Converter / helpers'
