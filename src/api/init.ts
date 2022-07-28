@@ -14,7 +14,7 @@ export const Api: FastifyPluginCallback<
   fastify.register(FastifySwagger, { openapi: {
     info: {
       title: 'Stacks + Bitcoin Utility Service',
-      description: '#### Simple, developer-friendly APIs for various uses. \n * Easy to use endpoints to retrieve Bitcoin information related to Stacks and vice versa. \n * Automatic Clarity encoding & decoding for various Stacks RPC endpoints. \n * Chain-tip based HTTP caching support for expensive Stacks RPC endpoints.',
+      description: '#### Simple, developer-friendly APIs for various uses. \n _No Stacks CLI installed?_ No problem. _Not sure how to encode a value for a read-only contract call?_ No problem. Use the simple cURL commands in the examples below. \n * Retrieve Bitcoin information related to Stacks and vice versa. \n * Easily invoke Clarity function calls or data lookups with endpoints that automatically encoding & decoding Clarity values. \n * Chain-tip based HTTP caching support for expensive Stacks RPC endpoints.',
       version: '0.0.1',
     },
     externalDocs: {
