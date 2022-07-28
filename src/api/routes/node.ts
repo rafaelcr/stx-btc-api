@@ -87,7 +87,52 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
         contract: Type.String({examples: ['crypto-graffiti']}),
         map: Type.String({examples: ['nft-data']}),
         key: Type.String({examples: ['42']}),
-      })
+      }), 
+      response: {
+        200: Type.String({
+          description: "Success response",
+            examples:[{
+              "type" : "(tuple (claimed bool) (metadata (string-ascii 53)) (price uint))",
+              "value": {
+              "claimed": {
+                "type": "bool",
+                "value": "true"
+              },
+              "metadata": {
+                "type": "(string-ascii 53)",
+                "value": "ipfs://Qmc4amxMnGJRMqp4VjYgXtAKc59SPjUJFXcDEWsHtY4zSg"
+              },
+              "price": {
+                "type": "uint",
+                "value": "50000000"
+            }
+          }
+            }],
+
+            stacks: Type.Object({
+              address: Type.String({
+                description: 'STX(Stacks) address',
+                examples: ['SPRSDSRT18DS9R8Y2W13JTKF89NFHEGDWQPB78RE'],
+              }),
+              balance: Type.Number({
+                description: 'Balance for the stacks or BTC address',
+                examples: ['0']
+              })
+            }),
+            bitcoin: Type.Object({
+              address: Type.String({
+              description: 'BTC(Bitcoin) address',
+              examples: ['15XCtJkEDxE1nhFawvPY4QEkEyNywxNSfL'],
+            }),
+            balance: Type.Number({
+              description: 'Balance for the stacks or BTC address',
+              examples: ['0']
+            })})
+
+
+        })
+      }
+    
     }
   }, async (request, reply) => {
     const { address, contract, map, key } = request.params;
