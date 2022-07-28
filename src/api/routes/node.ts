@@ -97,7 +97,42 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
         contract: Type.String({examples: ['crypto-graffiti']}),
         map: Type.String({examples: ['nft-data']}),
         key: Type.String({examples: ['42']}),
-      })
+      }), 
+      response : {
+        200 : Type.Object({
+          
+            type: Type.String({
+              examples: ["(tuple (claimed bool) (metadata (string-ascii 53)) (price uint))"],  
+         }),
+         value: Type.Object({
+          claimed: Type.Object({
+            type: Type.String({
+              examples: ['bool']
+            }),
+            value: Type.Boolean({
+              examples:[true]
+            }) 
+          }),
+          metadata: Type.Object({
+            type: Type.String({
+              examples: ['(string-ascii 53)']
+            }),
+            value: Type.String({
+              examples:["ipfs://Qmc4amxMnGJRMqp4VjYgXtAKc59SPjUJFXcDEWsHtY4zSg"]
+            }) 
+      
+          }),
+          price: Type.Object({
+            type: Type.String({
+              examples: ['uint']
+            }),
+            value: Type.String({
+              examples:["50000000"]
+            }) 
+          }),
+        })   
+       })
+      }
     }
   }, async (request, reply) => {
     const { address, contract, map, key } = request.params;
