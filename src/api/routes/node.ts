@@ -108,28 +108,6 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
             }
           }
             }],
-
-            stacks: Type.Object({
-              address: Type.String({
-                description: 'STX(Stacks) address',
-                examples: ['SPRSDSRT18DS9R8Y2W13JTKF89NFHEGDWQPB78RE'],
-              }),
-              balance: Type.Number({
-                description: 'Balance for the stacks or BTC address',
-                examples: ['0']
-              })
-            }),
-            bitcoin: Type.Object({
-              address: Type.String({
-              description: 'BTC(Bitcoin) address',
-              examples: ['15XCtJkEDxE1nhFawvPY4QEkEyNywxNSfL'],
-            }),
-            balance: Type.Number({
-              description: 'Balance for the stacks or BTC address',
-              examples: ['0']
-            })})
-
-
         })
       }
     
