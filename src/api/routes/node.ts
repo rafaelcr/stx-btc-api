@@ -167,7 +167,7 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
       summary: 'Perform a read-only Clarity function call',
       description: 'Helper wrapping the POST [`/v2/contracts/call-read/{address}/{contract}/{function}` endpoint](https://github.com/stacks-network/stacks-blockchain/blob/master/docs/rpc-endpoints.md#post-v2contractscall-readstacks-addresscontract-namefunction-name). The provided function arguments are automatically converted into the correct serialized Clarity values. The Clarity response is automatically decoded into JSON. The endpoint uses the GET method so http caching is possible.',
       querystring: Type.Object({
-        arg: Type.Array(Type.String({examples: ['149']})),
+        arg: Type.Array(Type.String(), {examples: ['149', '2']}),
         sender: Type.Optional(Type.String()),
         args_encoded: Type.Optional(Type.Boolean({ 
           description: 'If true then the function args are treated as already hex-encoded Clarity values. Otherwise, values will be coerced into the matching contract ABI type.' 
