@@ -31,10 +31,26 @@ export const BtcRoutes: FastifyPluginCallback<
           examples: ['mainnet', 'testnet'],
         }))
       }),
+      response : {
+        200: Type.Object({
+          stacks: Type.String({
+            description:'stacks address',
+            examples:['SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7']
+          }),
+          bitcoin: Type.String({
+            description:'bitcoin address',
+            examples:['1FzTxL9Mxnm2fdmnQEArfhzJHevwbvcH6d']
+          }),
+          network: Type.String({
+            description:'network',
+            examples:['mainnet']
+          })
+        })
+      }
     }
   }, (request, reply) => {
     const addrInfo = getAddressInfo(request.params.address, request.query.network);
-    reply.type('application/json').send(JSON.stringify(addrInfo, null, 2));
+    reply.type('application/json').send(addrInfo);
   });
 
   fastify.get('/addr/:address/balances', {
