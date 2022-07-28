@@ -37,7 +37,7 @@ export const BtcRoutes: FastifyPluginCallback<
   fastify.get('/addr/:address/balances', {
     schema: {
       description: "Get balance for a given address",
-      tags: ["get balance"],
+      tags: ["Address"],
       operationId: 'getUserAddress',
       params: Type.Object({
         address: Type.String({
