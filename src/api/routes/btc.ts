@@ -25,16 +25,6 @@ export const BtcRoutes: FastifyPluginCallback<
           examples: ['SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7', '1FzTxL9Mxnm2fdmnQEArfhzJHevwbvcH6d'],
         }),
       }),
-      response: {
-        200: Type.String({
-          description: "Success response",
-            examples:[{
-                "stacks": "SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7",
-                "bitcoin": "1FzTxL9Mxnm2fdmnQEArfhzJHevwbvcH6d",
-                "network": "mainnet"
-              }],
-        })
-      },
       querystring: Type.Object({
         network: Type.Optional(Type.Union([Type.Literal('mainnet'), Type.Literal('testnet')], {
           description: 'Specify if the address should be converted to mainnet or testnet',
@@ -56,7 +46,32 @@ export const BtcRoutes: FastifyPluginCallback<
           description: 'Specify either a Stacks or Bitcoin address',
           examples: ['SPRSDSRT18DS9R8Y2W13JTKF89NFHEGDWQPB78RE', '15XCtJkEDxE1nhFawvPY4QEkEyNywxNSfL'],
         }),
+      }),
+      response : {
+        200 : Type.Object({
+          stacks: Type.Object({
+            address: Type.String({
+              description: 'Specify either a Stacks or Bitcoin address',
+              examples: ['SPRSDSRT18DS9R8Y2W13JTKF89NFHEGDWQPB78RE'],
+            }),
+            balance: Type.String({
+              description: 'Account balance for the stacks address',
+              examples: ["5000"],
+            })
+          }),
+          bitcoin: Type.Object({
+            address: Type.String({
+              description: 'Bitcoin address',
+              examples: ['15XCtJkEDxE1nhFawvPY4QEkEyNywxNSfL'],
+            }),
+            balance: Type.String({
+              description: 'Account balance for the bitcoin address',
+              examples: ["3.01321"],
+            })
+          })
+
       })
+      }
     }
   }, async (req, reply) => {
     const addrInfo = getAddressInfo(req.params.address, 'mainnet');
