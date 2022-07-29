@@ -135,7 +135,7 @@ export const BtcRoutes: FastifyPluginCallback<
           }),
         ], {
           description: 'A Bitcoin block hash or block height',
-          examples: ['00000000000000000003e70c11501aaba9c0b21229ec75b6be9af4649cd2f8d9', 746782],
+          examples: ['000000000000000000080e839f4b079220929dab9ce9567e8ba24923c413e14d', 746204],
         })
       }),
       
@@ -194,7 +194,7 @@ export const BtcRoutes: FastifyPluginCallback<
       } catch (error) {
         return null;
       }
-    }).filter(r => r !== null);;
+    }).filter(r => r !== null);
 
     const payload = {
       bitcoinBlockHash: btcBlockData.response.hash,

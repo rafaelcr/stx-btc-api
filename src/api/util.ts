@@ -223,11 +223,6 @@ export function decodeLeaderBlockCommit(txOutScript: string) {
  * https://github.com/stacksgov/sips/blob/main/sips/sip-001/sip-001-burn-election.md#leader-vrf-key-registrations
  */
 export function decodeLeaderVrfKeyRegistration(txOutScript: string) {
-  // Total byte length w/ OP_RETURN and lead block commit message is 83 bytes
-  if (txOutScript.length !== 166) {
-    return null;
-  }
-
   const opReturnHex = '6a';
   if (!txOutScript.startsWith(opReturnHex)) {
     return null;
@@ -261,12 +256,14 @@ export function decodeLeaderVrfKeyRegistration(txOutScript: string) {
   const provingPublicKeyHex = provingPublicKey.toString('hex');
 
   // a field for including a miner memo
-  const memo = scriptData.subarray(55, 80);
-  const memoHex = memo.toString('hex');
+  let memo: string | null = null;
+  if (scriptData.length > 55) {
+    memo = scriptData.subarray(55).toString('hex');
+  }
 
   return {
     consensusHash: consensusHashHex,
     provingPublicKey: provingPublicKeyHex,
-    memo: memoHex,
+    memo: memo,
   };
 }
