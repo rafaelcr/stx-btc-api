@@ -31,17 +31,23 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
         contract: Type.String({examples: ['Marbling']}),
         var: Type.String({examples: ['base-uri']}),
       }),
-      response: {
-        200: Type.String({
-          description: "Success response",
-            examples:["ipfs://QmXmuoMt8V5YpnZr5PT4qSDoF4hX6yuL6QmW9zEyizZ9oe/"],
-        })
-      },
       querystring: Type.Object({
         no_unwrap: Type.Optional(Type.Boolean({
           description: 'If true, top-level Optional and Response values will not be unwrapped.'
         }))
       }),
+      response: {
+        200: Type.Union([
+          Type.Any(),
+          Type.String(),
+          Type.Number(),
+          Type.Boolean(),
+          Type.Null(),
+        ], {
+          description: "Decoded Clarity value",
+          examples: ["ipfs://QmXmuoMt8V5YpnZr5PT4qSDoF4hX6yuL6QmW9zEyizZ9oe/"],
+        })
+      }
     }
   }, async (request, reply) => {
     const { address, contract, var: dataVar } = request.params;
@@ -74,7 +80,7 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
       decodedResult = null;
     }
 
-    reply.type('application/json').send(decodedResult);
+    reply.type('application/json').send(JSON.stringify(decodedResult, null, 2));
   });
 
   // POST /v2/map_entry/[Stacks Address]/[Contract Name]/[Map Name]
@@ -97,41 +103,18 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
         contract: Type.String({examples: ['crypto-graffiti']}),
         map: Type.String({examples: ['nft-data']}),
         key: Type.String({examples: ['42']}),
-      }), 
-      response : {
-        200 : Type.Object({
-          
-            type: Type.String({
-              examples: ["(tuple (claimed bool) (metadata (string-ascii 53)) (price uint))"],  
-         }),
-         value: Type.Object({
-          claimed: Type.Object({
-            type: Type.String({
-              examples: ['bool']
-            }),
-            value: Type.Boolean({
-              examples:[true]
-            }) 
-          }),
-          metadata: Type.Object({
-            type: Type.String({
-              examples: ['(string-ascii 53)']
-            }),
-            value: Type.String({
-              examples:["ipfs://Qmc4amxMnGJRMqp4VjYgXtAKc59SPjUJFXcDEWsHtY4zSg"]
-            }) 
-      
-          }),
-          price: Type.Object({
-            type: Type.String({
-              examples: ['uint']
-            }),
-            value: Type.String({
-              examples:["50000000"]
-            }) 
-          }),
-        })   
-       })
+      }),
+      response: {
+        200: Type.Union([
+          Type.Any(),
+          Type.String(),
+          Type.Number(),
+          Type.Boolean(),
+          Type.Null(),
+        ], {
+          description: "Decoded Clarity value",
+          examples: ["ipfs://QmXmuoMt8V5YpnZr5PT4qSDoF4hX6yuL6QmW9zEyizZ9oe/"],
+        })
       }
     }
   }, async (request, reply) => {
@@ -222,11 +205,16 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
         contract: Type.String({examples: ['arkadiko-swap-v2-1']}),
         fn: Type.String({examples: ['get-pair-details']}),
       }),
-    
       response: {
-        200: Type.String({
-          description: "Success response",
-            examples:[500000000],
+        200: Type.Union([
+          Type.Any(),
+          Type.String(),
+          Type.Number(),
+          Type.Boolean(),
+          Type.Null(),
+        ], {
+          description: "Decoded Clarity value",
+          examples: ["ipfs://QmXmuoMt8V5YpnZr5PT4qSDoF4hX6yuL6QmW9zEyizZ9oe/"],
         })
       }
     }
