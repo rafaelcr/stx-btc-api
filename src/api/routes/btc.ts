@@ -119,6 +119,99 @@ export const BtcRoutes: FastifyPluginCallback<
     });
   });
 
+  fastify.get('/miner-participants/:block', {
+    schema: {
+      tags: ['Bitcoin info'],
+      summary: 'Get miners that participated for a Stacks block',
+      description: 'Lookup the miners and their Bitcoin txs that participated in mining a given Stacks blocks.',
+      params: Type.Object({
+        block: Type.Union([
+          Type.String({
+            description: 'Stacks block hash',
+            pattern: '^(0x[0-9a-fA-F]{64}|[0-9a-fA-F]{64})$',
+          }),
+          Type.Integer({
+            description: 'Stacks block height (block number)'
+          }),
+        ], {
+          description: 'A Stacks block hash or block height',
+          examples: ['0x42a148bf018463f6680e8e215037434b845b145d09272305e16d2411283ca39c', 66687],
+        })
+      }),
+    }
+  }, async (request, reply) => {
+    const stxApiConfig = new stacksApiClient.Configuration({ fetchApi: undiciFetch });
+    const stxBlockApi = new stacksApiClient.BlocksApi(stxApiConfig);
+    let stxBlockData: stackApiTypes.Block;
+    let stxBlockHash: string;
+    let stxBlockHeight: number;
+    if (typeof request.params.block === 'string') {
+      stxBlockHash = request.params.block.toLowerCase();
+      if (!stxBlockHash.startsWith('0x')) {
+        stxBlockHash + '0x' + stxBlockHash;
+      }
+      stxBlockData = await stxBlockApi.getBlockByHash({ hash: stxBlockHash }) as stackApiTypes.Block;
+      stxBlockHeight = stxBlockData.height;
+    } else {
+      stxBlockHeight = request.params.block;
+      stxBlockData = await stxBlockApi.getBlockByHeight({ height: stxBlockHeight }) as stackApiTypes.Block;
+      stxBlockHash = stxBlockData.hash;
+    }
+    
+    const btcBlockDataUrl = new URL(`/rawblock/${stxBlockData.burn_block_height}`, BLOCKCHAIN_INFO_API_ENDPOINT);
+    const btcBlockData = await fetchJson<{
+      hash: string;
+      height: number;
+      tx: {
+        hash: string;
+        inputs: {
+          prev_out: {
+            addr?: string;
+          }
+        }[];
+        out: {
+          script: string;
+          addr?: string;
+        }[];
+      }[];
+    }>({ url: btcBlockDataUrl });
+    if (btcBlockData.result !== 'ok') {
+      throw new Error(`Status: ${btcBlockData.status}, response: ${JSON.stringify(btcBlockData.response)}`);
+    }
+
+    const leaderBlockCommits = btcBlockData.response.tx.filter(tx => tx.out.length > 0).map(tx => {
+      try {
+        const result = decodeLeaderBlockCommit(tx.out[0].script);
+        if (!result) {
+          return null;
+        }
+        const addr = tx.inputs[0]?.prev_out?.addr ?? null;
+        return {
+          txid: tx.hash,
+          address: addr,
+          stxAddress: addr ? b58ToC32(addr) : null,
+          ...result,
+        };
+      } catch (error) {
+        return null;
+      }
+    }).filter(r => r !== null);
+
+    const winner = leaderBlockCommits.find(tx => tx?.txid === stxBlockData.miner_txid.slice(2));
+    const participants = leaderBlockCommits.map(tx => {
+      return {
+        btcTx: tx?.txid,
+        stxAddress: tx?.stxAddress,
+        btcAddress: tx?.address,
+      }
+    });
+    const payload = {
+      winner: winner?.stxAddress,
+      participants: participants,
+    };
+    reply.send(payload);
+  });
+
   fastify.get('/btc-block-stx-ops/:block', {
     schema: {
       tags: ['Bitcoin info'],
