@@ -1,6 +1,7 @@
 import { fetch as undiciFetch, Headers, Request, RequestInit, Response } from "undici";
 import * as createError from '@fastify/error';
 import * as c32check from 'c32check';
+import { Static, TSchema, Type } from "@sinclair/typebox";
 
 const defaultFetchTimeout = 15_000; // 15 seconds
 
@@ -136,4 +137,8 @@ export function getAddressInfo(addr: string, network: 'mainnet' | 'testnet' = 'm
     bitcoin: b58addr,
     network: networkName,
   };
+}
+
+export function TypeNullable<T extends TSchema>(schema: T) {
+  return Type.Unsafe<Static<T> | null>({ ...schema, nullable: true })
 }

@@ -6,7 +6,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import * as createError from '@fastify/error';
 import { Type } from '@sinclair/typebox';
 import { ClarityAbi, ClarityAbiType, ClarityType, ClarityValue, cvToValue, deserializeCV, parseToCV, serializeCV } from '@stacks/transactions';
-import { fetchJson } from '../util';
+import { fetchJson, TypeNullable } from '../util';
 import { handleChainTipCache } from '../cache';
 import { STACKS_API_ENDPOINT } from '../../consts';
 
@@ -37,16 +37,15 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
         }))
       }),
       response: {
-        200: Type.Union([
-          Type.Any(),
+        200: TypeNullable(Type.Union([
+          Type.Object(Type.Any(), { additionalProperties: true}),
           Type.String(),
           Type.Number(),
           Type.Boolean(),
-          Type.Null(),
         ], {
           description: "Decoded Clarity value",
           examples: ["ipfs://QmXmuoMt8V5YpnZr5PT4qSDoF4hX6yuL6QmW9zEyizZ9oe/"],
-        })
+        }))
       }
     }
   }, async (request, reply) => {
@@ -105,16 +104,15 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
         key: Type.String({examples: ['42']}),
       }),
       response: {
-        200: Type.Union([
-          Type.Any(),
+        200: TypeNullable(Type.Union([
+          Type.Object(Type.Any(), { additionalProperties: true}),
           Type.String(),
           Type.Number(),
           Type.Boolean(),
-          Type.Null(),
         ], {
           description: "Decoded Clarity value",
           examples: ["ipfs://QmXmuoMt8V5YpnZr5PT4qSDoF4hX6yuL6QmW9zEyizZ9oe/"],
-        })
+        }))
       }
     }
   }, async (request, reply) => {
@@ -181,7 +179,7 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
 
     reply.header('x-curl-equiv', result.getCurlCmd());
 
-    reply.type('application/json').send(decodedResult);
+    reply.type('application/json').send(JSON.stringify(decodedResult, null, 2));
   });
 
   // POST /v2/contracts/call-read/[Stacks Address]/[Contract Name]/[Function Name]
@@ -206,16 +204,15 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
         fn: Type.String({examples: ['get-pair-details']}),
       }),
       response: {
-        200: Type.Union([
-          Type.Any(),
+        200: TypeNullable(Type.Union([
+          Type.Object(Type.Any(), { additionalProperties: true}),
           Type.String(),
           Type.Number(),
           Type.Boolean(),
-          Type.Null(),
         ], {
           description: "Decoded Clarity value",
           examples: ["ipfs://QmXmuoMt8V5YpnZr5PT4qSDoF4hX6yuL6QmW9zEyizZ9oe/"],
-        })
+        }))
       }
     }
   }, async (request, reply) => {
@@ -291,7 +288,7 @@ export const NodeRoutes: FastifyPluginCallback<Record<never, never>, Server, Typ
 
     reply.header('x-curl-equiv', result.getCurlCmd());
 
-    reply.type('application/json').send(decodedResult);
+    reply.type('application/json').send(JSON.stringify(decodedResult, null, 2));
   });
   done();
 }
