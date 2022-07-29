@@ -366,6 +366,22 @@ export const BtcRoutes: FastifyPluginCallback<
           examples: ['00000000000000000007a5a46a5989b1e787346c3179a7e7d31ad99abdbc57c8', 746815],
         }),
       }),
+      response: {
+        200: Type.Object({
+              height:  Type.Number({
+              description:'Stacks Transction ID',
+              examples:[69320]
+                }),
+              hash: Type.String({
+              description:'Stacks Transction ID',
+              examples:['0x2e4a0e32bc4ea2cd747644a65c73d8f07873fd97ff0227d1aec2e9b264d37f6a']
+            }),
+            parent_block_hash: Type.String({
+              description:'Stacks Transction ID',
+              examples:['0xf6312ad452b7dbed13f3f6754d851e03d1f93d649a78f83ca977fe878b2df69c']
+            }),
+        })
+      }
     }
   }, async (req, reply) => {
     let stxBlock: any;
