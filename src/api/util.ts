@@ -2,6 +2,7 @@ import { fetch as undiciFetch, Headers, Request, RequestInit, Response } from "u
 import * as createError from '@fastify/error';
 import * as c32check from 'c32check';
 import { Static, TSchema, Type } from "@sinclair/typebox";
+import * as btc from 'bitcoinjs-lib';
 
 const defaultFetchTimeout = 15_000; // 15 seconds
 
@@ -141,4 +142,131 @@ export function getAddressInfo(addr: string, network: 'mainnet' | 'testnet' = 'm
 
 export function TypeNullable<T extends TSchema>(schema: T) {
   return Type.Unsafe<Static<T> | null>({ ...schema, nullable: true })
+}
+
+/** 
+ * Parse Stacks Leader Block Commit data from a Bitcoin tx output script. Returns null if script is not a Leader Block Commit. 
+ * https://github.com/stacksgov/sips/blob/main/sips/sip-001/sip-001-burn-election.md#leader-block-commit
+ */
+export function decodeLeaderBlockCommit(txOutScript: string) {
+  // Total byte length w/ OP_RETURN and lead block commit message is 83 bytes
+  if (txOutScript.length !== 166) {
+    return null;
+  }
+
+  const opReturnHex = '6a';
+  if (!txOutScript.startsWith(opReturnHex)) {
+    return null;
+  }
+  const decompiled = btc.script.decompile(Buffer.from(txOutScript, 'hex'));
+  if (decompiled?.length !== 2) {
+    return null;
+  }
+  let scriptData = decompiled[1];
+  if (!Buffer.isBuffer(scriptData)) {
+    return null;
+  }
+
+  const magicBytes = [88, 50]; // X2
+  if (scriptData[0] !== magicBytes[0] || scriptData[1] !== magicBytes[1]) {
+    return null;
+  }
+  
+  const opLeaderBlockCommit = Buffer.from('[');
+  const stxOp = scriptData.subarray(2, 3);
+  if (stxOp[0] !== opLeaderBlockCommit[0]) {
+    return null;
+  }
+
+  // header block hash of the Stacks anchored block
+  const blockHash = scriptData.subarray(3, 35);
+  const blockHashHex = blockHash.toString('hex');
+
+  // the next value for the VRF seed
+  const newSeed = scriptData.subarray(35, 67);
+  const newSeedHex = newSeed.toString('hex');
+
+  // the burn block height of this block's parent
+  const parentBlock = scriptData.subarray(67, 71);
+  const parentBlockInt = parentBlock.readUint32BE(0);
+
+  // the vtxindex for this block's parent's block commit
+  const parentTxOffset = scriptData.subarray(71, 73);
+  const parentTxOffsetInt = parentTxOffset.readUint16BE(0);
+  
+  // the burn block height of the miner's VRF key registration
+  const keyBlock = scriptData.subarray(73, 77);
+  const keyBlockInt = keyBlock.readUint32BE(0);
+
+  // the vtxindex for this miner's VRF key registration
+  const keyTxOffset = scriptData.subarray(77, 79);
+  const keyTxOffsetInt = keyTxOffset.readUint16BE(0);
+
+  // the burn block height at which this leader block commit was created modulo BURN_COMMITMENT_WINDOW (=6).
+  // That is, if the block commit is included in the intended burn block then this value should be equal to: (commit_burn_height - 1) % 6. 
+  // This field is used to link burn commitments from the same miner together even if a commitment was included in a late burn block.
+  const burnParentModulus = scriptData.subarray(79, 80)[0];
+
+  return {
+    blockHash: blockHashHex,
+    newSeed: newSeedHex,
+    parentBlock: parentBlockInt,
+    parentTxOffset: parentTxOffsetInt,
+    keyBlock: keyBlockInt,
+    keyTxOffset: keyTxOffsetInt,
+    burnParentModulus,
+  };
+}
+
+/** 
+ * Parse Stacks Leader VRF Key Registration data from a Bitcoin tx output script. Returns null if script is not a Leader VRF Key Registration. 
+ * https://github.com/stacksgov/sips/blob/main/sips/sip-001/sip-001-burn-election.md#leader-vrf-key-registrations
+ */
+export function decodeLeaderVrfKeyRegistration(txOutScript: string) {
+  // Total byte length w/ OP_RETURN and lead block commit message is 83 bytes
+  if (txOutScript.length !== 166) {
+    return null;
+  }
+
+  const opReturnHex = '6a';
+  if (!txOutScript.startsWith(opReturnHex)) {
+    return null;
+  }
+  const decompiled = btc.script.decompile(Buffer.from(txOutScript, 'hex'));
+  if (decompiled?.length !== 2) {
+    return null;
+  }
+  let scriptData = decompiled[1];
+  if (!Buffer.isBuffer(scriptData)) {
+    return null;
+  }
+
+  const magicBytes = [88, 50]; // X2
+  if (scriptData[0] !== magicBytes[0] || scriptData[1] !== magicBytes[1]) {
+    return null;
+  }
+  
+  const opLeaderVrfKeyRegistration = Buffer.from('^');
+  const stxOp = scriptData.subarray(2, 3);
+  if (stxOp[0] !== opLeaderVrfKeyRegistration[0]) {
+    return null;
+  }
+
+  // the current consensus hash for the burnchain state of the Stacks blockchain
+  const consensusHash = scriptData.subarray(3, 23);
+  const consensusHashHex = consensusHash.toString('hex');
+
+  // the 32-byte public key used in the miner's VRF proof
+  const provingPublicKey = scriptData.subarray(23, 55);
+  const provingPublicKeyHex = provingPublicKey.toString('hex');
+
+  // a field for including a miner memo
+  const memo = scriptData.subarray(55, 80);
+  const memoHex = memo.toString('hex');
+
+  return {
+    consensusHash: consensusHashHex,
+    provingPublicKey: provingPublicKeyHex,
+    memo: memoHex,
+  };
 }

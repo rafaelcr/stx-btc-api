@@ -2,12 +2,13 @@ import { Server } from 'http';
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { FastifyPluginCallback } from "fastify";
 import { Type } from '@sinclair/typebox';
-import { fetchJson, getAddressInfo } from '../util';
+import { decodeLeaderBlockCommit, decodeLeaderVrfKeyRegistration, fetchJson, getAddressInfo } from '../util';
 import { request, fetch as undiciFetch } from 'undici';
 import * as stacksApiClient from '@stacks/blockchain-api-client';
 import * as stackApiTypes from '@stacks/stacks-blockchain-api-types';
 import BigNumber from 'bignumber.js';
 import { BLOCKCHAIN_EXPLORER_ENDPOINT, BLOCKCHAIN_INFO_API_ENDPOINT, STACKS_API_ENDPOINT, STACKS_EXPLORER_ENDPOINT } from '../../consts';
+import { b58ToC32 } from 'c32check';
 
 export const BtcRoutes: FastifyPluginCallback<
   Record<never, never>,
@@ -116,6 +117,92 @@ export const BtcRoutes: FastifyPluginCallback<
         balance: btcBalanceFormatted
       }
     });
+  });
+
+  fastify.get('/btc-block-stx-ops/:block', {
+    schema: {
+      tags: ['Bitcoin info'],
+      summary: 'Get Stacks operations contained in a Bitcoin block',
+      description: 'Decode any Stacks operations contained with a given Bitcoin block\'s transactions. Shows Stacks miners that have participated in a given Bitcoin block.',
+      params: Type.Object({
+        block: Type.Union([
+          Type.String({
+            description: 'Bitcoin block hash',
+            pattern: '^(0x[0-9a-fA-F]{64}|[0-9a-fA-F]{64})$',
+          }),
+          Type.Integer({
+            description: 'Bitcoin block height (block number)'
+          }),
+        ], {
+          description: 'A Bitcoin block hash or block height',
+          examples: ['00000000000000000003e70c11501aaba9c0b21229ec75b6be9af4649cd2f8d9', 746782],
+        })
+      }),
+      
+    }
+  }, async (request, reply) => {
+    const btcBlockDataUrl = new URL(`/rawblock/${request.params.block}`, BLOCKCHAIN_INFO_API_ENDPOINT);
+    const btcBlockData = await fetchJson<{
+      hash: string;
+      height: number;
+      tx: {
+        hash: string;
+        inputs: {
+          prev_out: {
+            addr?: string;
+          }
+        }[];
+        out: {
+          script: string;
+          addr?: string;
+        }[];
+      }[];
+    }>({ url: btcBlockDataUrl });
+    if (btcBlockData.result !== 'ok') {
+      throw new Error(`Status: ${btcBlockData.status}, response: ${JSON.stringify(btcBlockData.response)}`);
+    }
+
+    const leaderBlockCommits = btcBlockData.response.tx.filter(tx => tx.out.length > 0).map(tx => {
+      try {
+        const result = decodeLeaderBlockCommit(tx.out[0].script);
+        if (!result) {
+          return null;
+        }
+        const addr = tx.inputs[0]?.prev_out?.addr ?? null;
+        return {
+          txid: tx.hash,
+          address: addr,
+          stxAddress: addr ? b58ToC32(addr) : null,
+          ...result,
+        };
+      } catch (error) {
+        return null;
+      }
+    }).filter(r => r !== null);
+
+    const leaderVrfKeyRegistrations = btcBlockData.response.tx.filter(tx => tx.out.length > 0).map(tx => {
+      try {
+        const result = decodeLeaderVrfKeyRegistration(tx.out[0].script);
+        if (!result) {
+          return null;
+        }
+        return {
+          txid: tx.hash,
+          address: tx.inputs[0]?.prev_out?.addr ?? null,
+          ...result,
+        };
+      } catch (error) {
+        return null;
+      }
+    }).filter(r => r !== null);;
+
+    const payload = {
+      bitcoinBlockHash: btcBlockData.response.hash,
+      bitcoinBlockHeight: btcBlockData.response.height,
+      leaderVrfKeyRegistrations: leaderVrfKeyRegistrations,
+      leaderBlockCommits: leaderBlockCommits,
+    };
+    reply.send(payload);
   });
 
   fastify.get('/btc-info-from-stx-tx/:txid', {
