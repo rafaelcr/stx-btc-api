@@ -34,17 +34,19 @@ export const BtcRoutes: FastifyPluginCallback<
       response : {
         200: Type.Object({
           stacks: Type.String({
-            description:'stacks address',
-            examples:['SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7']
+            description: 'Stacks address',
+            examples: ['SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7']
           }),
           bitcoin: Type.String({
-            description:'bitcoin address',
-            examples:['1FzTxL9Mxnm2fdmnQEArfhzJHevwbvcH6d']
+            description: 'Bitcoin address',
+            examples: ['1FzTxL9Mxnm2fdmnQEArfhzJHevwbvcH6d']
           }),
           network: Type.String({
-            description:'network',
-            examples:['mainnet']
+            description: 'Network',
+            examples: ['mainnet']
           })
+        }, {
+          description: 'The Stacks address, Bitcoin address, and network version'
         })
       }
     }
@@ -64,15 +66,15 @@ export const BtcRoutes: FastifyPluginCallback<
         }),
       }),
       response : {
-        200 : Type.Object({
+        200: Type.Object({
           stacks: Type.Object({
             address: Type.String({
               description: 'Specify either a Stacks or Bitcoin address',
               examples: ['SPRSDSRT18DS9R8Y2W13JTKF89NFHEGDWQPB78RE'],
             }),
             balance: Type.String({
-              description: 'Account balance for the stacks address',
-              examples: ["5000"],
+              description: 'Account balance for the Stacks address',
+              examples: ["2.96584980"],
             })
           }),
           bitcoin: Type.Object({
@@ -81,12 +83,13 @@ export const BtcRoutes: FastifyPluginCallback<
               examples: ['15XCtJkEDxE1nhFawvPY4QEkEyNywxNSfL'],
             }),
             balance: Type.String({
-              description: 'Account balance for the bitcoin address',
-              examples: ["3.01321"],
+              description: 'Account balance for the Bitcoin address',
+              examples: ["3.701321"],
             })
           })
-
-      })
+        }, {
+          description: 'The Bitcoin and Stacks account balances for the given address'
+        })
       }
     }
   }, async (req, reply) => {
@@ -119,7 +122,7 @@ export const BtcRoutes: FastifyPluginCallback<
     schema: {
       tags: ['Bitcoin info'],
       summary: 'Get Bitcoin information for a Stacks tx',
-      description: 'Returns Bitcoin related information for a given Stacks transaction',
+      description: 'Get Bitcoin information related to a given Stacks transaction',
       params: Type.Object({
         txid: Type.String({
           description: 'A Stacks transaction ID',
@@ -129,54 +132,56 @@ export const BtcRoutes: FastifyPluginCallback<
       }),
       response: {
         200: Type.Object({
-              stacksTx:  Type.String({
-              description:'Stacks Transction ID',
-              examples:['0xc4778249d7af16d004d5344be2683fae5c9263e22d5a2cdd6e1abf38bbdb8fa3']
-                }),
-              stacksTxExplorer: Type.String({
-              description:'Stacks Transction ID',
-              examples:['https://explorer.stacks.co/txid/0xc4778249d7af16d004d5344be2683fae5c9263e22d5a2cdd6e1abf38bbdb8fa3?chain=mainnet']
-            }),
-            stacksBlockHash: Type.String({
-              description:'Stacks Transction ID',
-              examples:['0x529ed0f3ef381bbb25e9ffe46db87aa3d3de185e31129004a4da010495cc0daa']
-            }),
-              stacksBlockExplorer: Type.String({
-              description:'Stacks Transction ID',
-              examples:['https://explorer.stacks.co/block/0x529ed0f3ef381bbb25e9ffe46db87aa3d3de185e31129004a4da010495cc0daa?chain=mainnet']
-            }),
-            bitcoinBlockHash: Type.String({
-              description:'Stacks Transction ID',
-              examples:['00000000000000000003e70c11501aaba9c0b21229ec75b6be9af4649cd2f8d9']
-            }),
-            bitcoinBlockExplorer: Type.String({
-              description:'Stacks Transction ID',
-              examples:['https://www.blockchain.com/btc/block/00000000000000000003e70c11501aaba9c0b21229ec75b6be9af4649cd2f8d9']
-            }),
-            bitcoinTx: Type.String({
-              description:'Stacks Transction ID',
-              examples:['d62956b9a1d7cc39e9f6210e3753bfaf10e5c6709b17245c1335befa3fe06d4c']
-            }),
-            bitcoinTxExplorer: Type.String({
-              description:'Stacks Transction ID',
-              examples:['https://www.blockchain.com/btc/tx/d62956b9a1d7cc39e9f6210e3753bfaf10e5c6709b17245c1335befa3fe06d4c']
-            }),
-            minerBtcAddress: Type.String({
-              description:'Stacks Transction ID',
-              examples:['18HTpsp3YuFqndkxxCJA6PXdtaFUQCfwK6']
-            }),
-            minerBtcAddressExplorer: Type.String({
-              description:'Stacks Transction ID',
-              examples:['https://www.blockchain.com/btc/address/18HTpsp3YuFqndkxxCJA6PXdtaFUQCfwK6']
-            }),
-            minerStxAddress: Type.String({
-              description:'Stacks Transction ID',
-              examples:['SP17YBVDTV7FNWDM5Y8PWXB9MQRT0FTWZXQBFA97A']
-            }),
-            minerStxAddressExplorer: Type.String({
-              description:'Stacks Transction ID',
-              examples:['https://explorer.stacks.co/address/SP17YBVDTV7FNWDM5Y8PWXB9MQRT0FTWZXQBFA97A?chain=mainnet']
-            }),
+          stacksTx: Type.String({
+            description: 'Stacks transction ID',
+            examples: ['0xc4778249d7af16d004d5344be2683fae5c9263e22d5a2cdd6e1abf38bbdb8fa3']
+          }),
+          stacksTxExplorer: Type.String({
+            description: 'Stacks transction explorer',
+            examples: ['https://explorer.stacks.co/txid/0xc4778249d7af16d004d5344be2683fae5c9263e22d5a2cdd6e1abf38bbdb8fa3?chain=mainnet']
+          }),
+          stacksBlockHash: Type.String({
+            description: 'Stacks block hash',
+            examples: ['0x529ed0f3ef381bbb25e9ffe46db87aa3d3de185e31129004a4da010495cc0daa']
+          }),
+          stacksBlockExplorer: Type.String({
+            description: 'Stacks block explorer',
+            examples: ['https://explorer.stacks.co/block/0x529ed0f3ef381bbb25e9ffe46db87aa3d3de185e31129004a4da010495cc0daa?chain=mainnet']
+          }),
+          bitcoinBlockHash: Type.String({
+            description: 'Bitcoin block hash',
+            examples: ['00000000000000000003e70c11501aaba9c0b21229ec75b6be9af4649cd2f8d9']
+          }),
+          bitcoinBlockExplorer: Type.String({
+            description: 'Stacks transction ID',
+            examples: ['https://www.blockchain.com/btc/block/00000000000000000003e70c11501aaba9c0b21229ec75b6be9af4649cd2f8d9']
+          }),
+          bitcoinTx: Type.String({
+            description: 'Bitcoin transction ID',
+            examples: ['d62956b9a1d7cc39e9f6210e3753bfaf10e5c6709b17245c1335befa3fe06d4c']
+          }),
+          bitcoinTxExplorer: Type.String({
+            description: 'Bitcoin transction explorer',
+            examples: ['https://www.blockchain.com/btc/tx/d62956b9a1d7cc39e9f6210e3753bfaf10e5c6709b17245c1335befa3fe06d4c']
+          }),
+          minerBtcAddress: Type.String({
+            description: 'Miner Bitcoin address',
+            examples:['18HTpsp3YuFqndkxxCJA6PXdtaFUQCfwK6']
+          }),
+          minerBtcAddressExplorer: Type.String({
+            description: 'Miner Bitcoin address explorer',
+            examples: ['https://www.blockchain.com/btc/address/18HTpsp3YuFqndkxxCJA6PXdtaFUQCfwK6']
+          }),
+          minerStxAddress: Type.String({
+            description: 'Miner Stacks address',
+            examples:['SP17YBVDTV7FNWDM5Y8PWXB9MQRT0FTWZXQBFA97A']
+          }),
+          minerStxAddressExplorer: Type.String({
+            description: 'Miner Stacks address explorer',
+            examples: ['https://explorer.stacks.co/address/SP17YBVDTV7FNWDM5Y8PWXB9MQRT0FTWZXQBFA97A?chain=mainnet']
+          }),
+        }, {
+          description: 'Bitcoin information related to the given Stacks transaction'
         })
       }
     }
@@ -233,16 +238,15 @@ export const BtcRoutes: FastifyPluginCallback<
     schema: {
       tags: ['Bitcoin info'],
       summary: 'Get Bitcoin information for a Stacks block',
-      description: 'Returns Bitcoin related information for a given Stacks block',
+      description: 'Get Bitcoin information related to a given Stacks block',
       params: Type.Object({
         block: Type.Union([
           Type.String({
             description: 'A Stacks block hash',
-            // examples: ['0xc4778249d7af16d004d5344be2683fae5c9263e22d5a2cdd6e1abf38bbdb8fa3'],
             pattern: '^(0x[0-9a-fA-F]{64}|[0-9a-fA-F]{64})$',
           }),
           Type.Integer({
-            description: 'A bitcoin block height (block number)'
+            description: 'A Stacks block height (block number)'
           }),
         ], {
           description: 'A Stacks block hash or block height',
@@ -251,46 +255,48 @@ export const BtcRoutes: FastifyPluginCallback<
       }),
       response: {
         200: Type.Object({
-              stacksBlockHash:  Type.String({
-              description:'Stacks block hash',
-              examples:['0x529ed0f3ef381bbb25e9ffe46db87aa3d3de185e31129004a4da010495cc0daa']
-                }),
-              stacksBlockExplorer: Type.String({
-              description:'Stacks block explorer',
-              examples:['https://explorer.stacks.co/block/0x529ed0f3ef381bbb25e9ffe46db87aa3d3de185e31129004a4da010495cc0daa?chain=mainnet']
-            }),
-            bitcoinBlockHash: Type.String({
-              description:'Bitcoin Block Hash',
-              examples:['00000000000000000003e70c11501aaba9c0b21229ec75b6be9af4649cd2f8d9']
-            }),
-            bitcoinBlockExplorer: Type.String({
-              description:'Bitcoin block explorer',
-              examples:['https://www.blockchain.com/btc/block/00000000000000000003e70c11501aaba9c0b21229ec75b6be9af4649cd2f8d9']
-            }),
-            bitcoinTx: Type.String({
-              description:'Bitcoin Tx',
-              examples:['d62956b9a1d7cc39e9f6210e3753bfaf10e5c6709b17245c1335befa3fe06d4c']
-            }),
-            bitcoinTxExplorer: Type.String({
-              description:'Bitcoin Tx Explorer',
-              examples:['https://www.blockchain.com/btc/tx/d62956b9a1d7cc39e9f6210e3753bfaf10e5c6709b17245c1335befa3fe06d4c']
-            }),
-            minerBtcAddress: Type.String({
-              description:'Miner Btc Address',
-              examples:['18HTpsp3YuFqndkxxCJA6PXdtaFUQCfwK6']
-            }),
-            minerBtcAddressExplorer: Type.String({
-              description:'Miner Btc Address Explorer',
-              examples:['https://www.blockchain.com/btc/address/18HTpsp3YuFqndkxxCJA6PXdtaFUQCfwK6']
-            }),
-            minerStxAddress: Type.String({
-              description:'Miner Stx Address',
-              examples:['SP17YBVDTV7FNWDM5Y8PWXB9MQRT0FTWZXQBFA97A']
-            }),
-            minerStxAddressExplorer: Type.String({
-              description:'Miner Stx Address Explorer',
-              examples:['https://explorer.stacks.co/address/SP17YBVDTV7FNWDM5Y8PWXB9MQRT0FTWZXQBFA97A?chain=mainnet']
-            }),
+          stacksBlockHash: Type.String({
+            description: 'Stacks block hash',
+            examples: ['0x529ed0f3ef381bbb25e9ffe46db87aa3d3de185e31129004a4da010495cc0daa']
+          }),
+          stacksBlockExplorer: Type.String({
+            description: 'Stacks block explorer',
+            examples: ['https://explorer.stacks.co/block/0x529ed0f3ef381bbb25e9ffe46db87aa3d3de185e31129004a4da010495cc0daa?chain=mainnet']
+          }),
+          bitcoinBlockHash: Type.String({
+            description: 'Bitcoin block hash',
+            examples: ['00000000000000000003e70c11501aaba9c0b21229ec75b6be9af4649cd2f8d9']
+          }),
+          bitcoinBlockExplorer: Type.String({
+            description: 'Bitcoin block explorer',
+            examples: ['https://www.blockchain.com/btc/block/00000000000000000003e70c11501aaba9c0b21229ec75b6be9af4649cd2f8d9']
+          }),
+          bitcoinTx: Type.String({
+            description: 'Bitcoin transaction',
+            examples: ['d62956b9a1d7cc39e9f6210e3753bfaf10e5c6709b17245c1335befa3fe06d4c']
+          }),
+          bitcoinTxExplorer: Type.String({
+            description: 'Bitcoin transaction explorer',
+            examples: ['https://www.blockchain.com/btc/tx/d62956b9a1d7cc39e9f6210e3753bfaf10e5c6709b17245c1335befa3fe06d4c']
+          }),
+          minerBtcAddress: Type.String({
+            description: 'Miner Bitcoin address',
+            examples: ['18HTpsp3YuFqndkxxCJA6PXdtaFUQCfwK6']
+          }),
+          minerBtcAddressExplorer: Type.String({
+            description: 'Miner Bitcoin address explorer',
+            examples: ['https://www.blockchain.com/btc/address/18HTpsp3YuFqndkxxCJA6PXdtaFUQCfwK6']
+          }),
+          minerStxAddress: Type.String({
+            description: 'Miner Stacks address',
+            examples: ['SP17YBVDTV7FNWDM5Y8PWXB9MQRT0FTWZXQBFA97A']
+          }),
+          minerStxAddressExplorer: Type.String({
+            description: 'Miner Stacks address explorer',
+            examples: ['https://explorer.stacks.co/address/SP17YBVDTV7FNWDM5Y8PWXB9MQRT0FTWZXQBFA97A?chain=mainnet']
+          }),
+        }, {
+          description: 'Bitcoin information related to a given Stacks block'
         })
       }
     }
@@ -353,6 +359,7 @@ export const BtcRoutes: FastifyPluginCallback<
     schema: {
       tags: ['Bitcoin info'],
       summary: 'Get the Stacks block associated with a Bitcoin block',
+      description: 'Get the Stacks block information associated with a given Bitcoin block hash or Bitcoin block height',
       querystring: Type.Object({
         'btc-block': Type.Union([
           Type.String({
@@ -368,18 +375,20 @@ export const BtcRoutes: FastifyPluginCallback<
       }),
       response: {
         200: Type.Object({
-              height:  Type.Number({
-              description:'Stacks Transction ID',
-              examples:[69320]
-                }),
-              hash: Type.String({
-              description:'Stacks Transction ID',
-              examples:['0x2e4a0e32bc4ea2cd747644a65c73d8f07873fd97ff0227d1aec2e9b264d37f6a']
-            }),
-            parent_block_hash: Type.String({
-              description:'Stacks Transction ID',
-              examples:['0xf6312ad452b7dbed13f3f6754d851e03d1f93d649a78f83ca977fe878b2df69c']
-            }),
+          height:  Type.Number({
+            description: 'Stacks block height',
+            examples: [69320]
+          }),
+          hash: Type.String({
+            description: 'Stacks block hash',
+            examples: ['0x2e4a0e32bc4ea2cd747644a65c73d8f07873fd97ff0227d1aec2e9b264d37f6a']
+          }),
+          parent_block_hash: Type.String({
+            description: 'Stacks parent block hash',
+            examples: ['0xf6312ad452b7dbed13f3f6754d851e03d1f93d649a78f83ca977fe878b2df69c']
+          }),
+        }, {
+          description: 'Stacks block related to the given Bitcoin block'
         })
       }
     }
