@@ -2,7 +2,7 @@ import { Server } from 'http';
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { FastifyPluginCallback } from "fastify";
 import { Type } from '@sinclair/typebox';
-import { decodeLeaderBlockCommit, decodeLeaderVrfKeyRegistration, fetchJson, getAddressInfo } from '../util';
+import { decodeLeaderBlockCommit, decodeLeaderVrfKeyRegistration, decodeStxTransferOp, fetchJson, getAddressInfo } from '../util';
 import { request, fetch as undiciFetch } from 'undici';
 import * as stacksApiClient from '@stacks/blockchain-api-client';
 import * as stackApiTypes from '@stacks/stacks-blockchain-api-types';
@@ -135,10 +135,9 @@ export const BtcRoutes: FastifyPluginCallback<
           }),
         ], {
           description: 'A Bitcoin block hash or block height',
-          examples: ['00000000000000000003e70c11501aaba9c0b21229ec75b6be9af4649cd2f8d9', 746782],
+          examples: ['000000000000000000080e839f4b079220929dab9ce9567e8ba24923c413e14d', 746204],
         })
       }),
-      
     }
   }, async (request, reply) => {
     const btcBlockDataUrl = new URL(`/rawblock/${request.params.block}`, BLOCKCHAIN_INFO_API_ENDPOINT);
@@ -194,11 +193,34 @@ export const BtcRoutes: FastifyPluginCallback<
       } catch (error) {
         return null;
       }
-    }).filter(r => r !== null);;
+    }).filter(r => r !== null);
+
+    const stxTransfers = btcBlockData.response.tx.filter(tx => tx.out.length > 0).map(tx => {
+      try {
+        const result = decodeStxTransferOp(tx.out[0].script);
+        if (!result) {
+          return null;
+        }
+        const fromAddr = tx.inputs[0]?.prev_out?.addr ?? null;
+        const fromStxAddr = fromAddr ? b58ToC32(fromAddr) : null;
+        const toBtcAddr = tx.out[1]?.addr ?? null;
+        const toStxAddr = toBtcAddr ? b58ToC32(toBtcAddr) : null;
+        return {
+          txid: tx.hash,
+          address: fromAddr,
+          fromAddr: fromStxAddr,
+          toAddr: toStxAddr,
+          ...result,
+        };
+      } catch (error) {
+        return null;
+      }
+    }).filter(r => r !== null);
 
     const payload = {
       bitcoinBlockHash: btcBlockData.response.hash,
       bitcoinBlockHeight: btcBlockData.response.height,
+      stxTransfers: stxTransfers,
       leaderVrfKeyRegistrations: leaderVrfKeyRegistrations,
       leaderBlockCommits: leaderBlockCommits,
     };
