@@ -3,6 +3,7 @@ import * as createError from '@fastify/error';
 import * as c32check from 'c32check';
 import { Static, TSchema, Type } from "@sinclair/typebox";
 import * as btc from 'bitcoinjs-lib';
+import BigNumber from 'bignumber.js';
 
 const defaultFetchTimeout = 15_000; // 15 seconds
 
@@ -265,5 +266,41 @@ export function decodeLeaderVrfKeyRegistration(txOutScript: string) {
     consensusHash: consensusHashHex,
     provingPublicKey: provingPublicKeyHex,
     memo: memo,
+  };
+}
+
+/** 
+ * Parse a STX-transfer operation from a Bitcoin tx out script.
+ */
+export function decodeStxTransferOp(txOutScript: string) {
+  const opReturnHex = '6a';
+  if (!txOutScript.startsWith(opReturnHex)) {
+    return null;
+  }
+  const decompiled = btc.script.decompile(Buffer.from(txOutScript, 'hex'));
+  if (decompiled?.length !== 2) {
+    return null;
+  }
+  let scriptData = decompiled[1];
+  if (!Buffer.isBuffer(scriptData)) {
+    return null;
+  }
+
+  const magicBytes = [88, 50]; // X2
+  if (scriptData[0] !== magicBytes[0] || scriptData[1] !== magicBytes[1]) {
+    return null;
+  }
+  
+  const stxTransferOpCode = Buffer.from('$');
+  const stxOp = scriptData.subarray(2, 3);
+  if (stxOp[0] !== stxTransferOpCode[0]) {
+    return null;
+  }
+
+  const microAmount = BigInt('0x' + scriptData.subarray(3, 19).toString('hex'));
+  const stxAmount = new BigNumber(microAmount.toString()).shiftedBy(-6).toFixed(6);
+
+  return {
+    stxAmount: stxAmount,
   };
 }
