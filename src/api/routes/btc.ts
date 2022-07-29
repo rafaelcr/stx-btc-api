@@ -123,7 +123,7 @@ export const BtcRoutes: FastifyPluginCallback<
     schema: {
       tags: ['Bitcoin info'],
       summary: 'Get Stacks operations contained in a Bitcoin block',
-      description: 'Decode any Stacks operations contained with a given Bitcoin block\'s transactions',
+      description: 'Decode any Stacks operations contained with a given Bitcoin block\'s transactions. Shows Stacks miners that have participated in a given Bitcoin block.',
       params: Type.Object({
         block: Type.Union([
           Type.String({
