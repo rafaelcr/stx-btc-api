@@ -5,6 +5,7 @@ import FastifySwagger from '@fastify/swagger';
 import FastifyCors from '@fastify/cors';
 import { NodeRoutes } from "./routes/node";
 import { BtcRoutes } from "./routes/btc";
+import { ClarityUtilRoutes } from "./routes/clarity-utils";
 
 export const Api: FastifyPluginCallback<
   Record<never, never>,
@@ -36,6 +37,7 @@ export const Api: FastifyPluginCallback<
 
   fastify.register(NodeRoutes);
   fastify.register(BtcRoutes);
+  fastify.register(ClarityUtilRoutes);
 
   fastify.get('/', (request, reply) => {
     reply.redirect('/documentation');

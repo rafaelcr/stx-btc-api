@@ -4,6 +4,7 @@ import * as c32check from 'c32check';
 import { Static, TSchema, Type } from "@sinclair/typebox";
 import * as btc from 'bitcoinjs-lib';
 import BigNumber from 'bignumber.js';
+import { bufferCV, ClarityValue, contractPrincipalCV, falseCV, intCV, listCV, noneCV, standardPrincipalCV, stringAsciiCV, stringUtf8CV, trueCV, tupleCV, uintCV } from "@stacks/transactions";
 
 const defaultFetchTimeout = 15_000; // 15 seconds
 
@@ -303,4 +304,99 @@ export function decodeStxTransferOp(txOutScript: string) {
   return {
     stxAmount: stxAmount,
   };
+}
+
+export function cvFromJson(input: unknown): ClarityValue {
+  const parseNumberInput = (val: string | number, originalInput: string) => {
+    const int = BigInt(val);
+    const U128_MAX = 2n ** 128n - 1n;
+    const U128_MIN = 0n;
+    const I128_MAX = 2n ** 127n - 1n;
+    const I128_MIN = (-2n) ** 127n;
+    if (int >= U128_MIN && int <= U128_MAX) {
+      return uintCV(int);
+    } else if (int >= I128_MIN && int <= I128_MAX) {
+      return intCV(int);
+    } else {
+      // Integer string cannot fit into 128 bits so encode as ascii string
+      return stringAsciiCV(originalInput);
+    }
+  }
+
+  if (typeof input === 'string') {
+    let inputTrimmed = input.trim();
+    // Test if string value is an integer so BigInt can be used rather than losing precision with JSON.parse() or parseInt()
+    if (/^[-+]?\d+$/.test(inputTrimmed)) {
+      return parseNumberInput(inputTrimmed, input);
+    }
+  }
+
+  let jsonParsed: unknown;
+  if (typeof input === 'string') {
+    try {
+      jsonParsed = JSON.parse(input);
+    } catch (error) {
+      // This will throw for regular string inputs that are not another js primitive (number, boolean), or are not an object or array
+      jsonParsed = input;
+    }
+  } else {
+    jsonParsed = input;
+  }
+
+  if (typeof jsonParsed === 'boolean') {
+    return jsonParsed ? trueCV() : falseCV();
+  } else if (typeof jsonParsed === 'number') {
+    // Can get here if receiving input like `12e+3`
+    if (Number.isInteger(jsonParsed)) {
+      return parseNumberInput(jsonParsed, typeof input === 'string' ? input : jsonParsed.toString());
+    } else {
+      // Input is not an integer (some decimal / or floating point special), encode as ascii string
+      return stringAsciiCV(typeof input === 'string' ? input : jsonParsed.toString());
+    }
+  } else if (typeof jsonParsed === 'string') {
+    // check if 0x-prefixed hex string
+    if (/^(0x|0X)[a-fA-F0-9]*$/.test(jsonParsed)) {
+      // if odd length then add a '0' char prefix
+      const prefix = jsonParsed.length % 2 !== 0 ? '0' : '';
+      const buff = Buffer.from(`${prefix}${jsonParsed.slice(2)}`, 'hex');
+      return bufferCV(buff);
+    } else if (/^[\x00-\x7F]*$/.test(jsonParsed)) {
+      // only contains ascii
+      if (jsonParsed.split('.').length === 2) {
+        // possible contract principal
+        const [address, contractName] = jsonParsed.split('.');
+        try {
+          return contractPrincipalCV(address, contractName);
+        } catch (error) {
+          // ignore, this throws if the address is not a valid C32 Stacks address
+        }
+      }
+      try {
+        // possible standard principal
+        return standardPrincipalCV(jsonParsed);
+      } catch (error) {
+        // ignore, this throws if the address is not a valid C32 Stacks address
+      }
+      return stringAsciiCV(jsonParsed);
+    } else {
+      // otherwise encode as utf8
+      return stringUtf8CV(jsonParsed);
+    }
+  } else if (jsonParsed === null) {
+    // handle case of input string "null" as an OptionalNone
+    return noneCV();
+  } else if (Array.isArray(jsonParsed)) {
+    const arrayVals: ClarityValue[] = [];
+    for (const item of jsonParsed) {
+      arrayVals.push(cvFromJson(item));
+    }
+    return listCV(arrayVals);
+  } else if (typeof jsonParsed === 'object') {
+    const tupleVals: Record<string, ClarityValue> = {};
+    for (const [name, val] of Object.entries(jsonParsed)) {
+      tupleVals[name] = cvFromJson(val);
+    }
+    return tupleCV(tupleVals);
+  }
+  throw new Error(`Unexpected value: ${JSON.stringify(input)}`);
 }

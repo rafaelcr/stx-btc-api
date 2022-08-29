@@ -7,6 +7,7 @@ dotenv.config();
 const fastify = Fastify({
   trustProxy: true,
   logger: true,
+  maxParamLength: 1048576, // 1MB
 }).withTypeProvider<TypeBoxTypeProvider>();
 
 fastify.register(Api);
